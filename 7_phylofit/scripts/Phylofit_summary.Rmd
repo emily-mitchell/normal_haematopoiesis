@@ -1,0 +1,70 @@
+---
+title: "Phylofit summary plots"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+suppressMessages(library(ggplot2))
+suppressMessages(library(gplots))
+suppressMessages(library(tidyverse))
+suppressMessages(library(gridExtra))
+suppressMessages(library(gtable))
+suppressMessages(library(RColorBrewer))
+```
+
+
+Set file paths and working directory
+```{r}
+setwd = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/phylofit/") 
+```
+
+Read in table of selection coefficients
+```{r}
+sel <- read.csv("~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/phylofit/selection_coeff_all.csv", stringsAsFactors = F)
+```
+
+
+
+Change selection coefficient to 'fitness effect'
+```{r}
+sel$fitness_effect <- sel$S*100
+sel$fitness_effect_lb <- sel$S_lb*100
+sel$fitness_effect_ub <- sel$S_ub*100
+```
+
+```{r}
+sel$donor_ID <- factor(sel$donor_ID, levels = c("KX001","KX002","AX001","KX007","KX008","KX004","KX003"))
+
+```
+
+```{r}
+pdf("sel.pdf", width = 10, height = 4)
+ggplot(sel[sel$donor_ID %in% c("KX007","KX008","KX004","KX003"),]) +
+  theme_bw()+
+  scale_fill_manual(values = brewer.pal(10,"Paired")[c(5,6,9,10)])+
+  geom_bar(aes(x= reorder(variant_ID,fitness_effect), y = fitness_effect,fill= donor_ID), stat="identity")+
+  geom_errorbar(aes(x= variant_ID, ymin= fitness_effect_lb, ymax= fitness_effect_ub), width = 0.3, , size = 0.5)+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  ylim(0,40)+
+  labs(y = "Fitness effect (s) (% per year)", x = "Clade ID")
+dev.off()
+```
+
+Plot all
+```{r}
+pdf("sel_cut.pdf", useDingbats = FALSE, width = 10, height = 4)
+ggplot(sel) +
+  theme_classic()+
+  geom_bar(aes(reorder(variant_ID, S), S, fill = donor_ID), stat="identity", alpha = 2)+
+  scale_fill_manual(values = brewer.pal(10,"Paired")[c(3,4,8,5,6,9,10)])+
+  geom_errorbar(aes(x= variant_ID, ymin= S_lb, ymax= S_ub), width = 0.4, colour = "black", size = 0.5)+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  ylim(0,0.5)+
+  labs(y = "S (Selection Coefficient)", x = "Driver ID")
+dev.off()
+```
+

@@ -1,0 +1,212 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Submitting simulation 1 as job on farm5 (with concatenated output file) 130120
+	/lustre/scratch117/casm/team154/em16/KX003/KX003_5/simulations/rsimpop2/
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+mkdir KX003_5
+mkdir KX003_5/parameters
+mkdir KX003_5/summary_stats
+mkdir KX003_5/logs
+mkdir KX003_5/scripts and create script there
+
+
+export PATH=/software/R-3.6.1/bin:${PATH}
+export R_HOME=$(R RHOME)
+export R_LIBS_USER="/nfs/users/nfs_e/em16/R/x86_64-pc-linux-gnu-library/3.6"
+
+RUNID='KX003_sim1'
+OUTPUT='/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/'
+MEM=5000
+QUEUE=long
+CORES=2
+
+for n in $(seq 1 1);
+do
+bsub -J"${RUNID}" -M${MEM} -R"select[mem>${MEM}] rusage[mem=${MEM}] span[hosts=1]" -n ${CORES} -q ${QUEUE} -e %J.stderr -o %J.stdout \
+"xvfb-run -a Rscript --no-save --no-restore --verbose /lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/scripts/KX003_simulation_1.R ${RUNID} ${OUTPUT}  > /lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/logs/KX003_simulation_1.Rout 2>&1" $n
+done
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+scp -r em16@farm5-login:/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/pdfs/*.pdf /Users/em16/Documents/PhD/Sequencing_results/DNA_seq/XX_summary/simulations/rsimpop2/KX003/output/KX003/
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Run ABC_1 interactively on farm
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+scp -r em16@farm5-login:/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/pdfs/*.pdf /Users/em16/Documents/PhD/Sequencing_results/DNA_seq/KX003/KX003_5/pop_modelling/ABC_output/
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Submitting simulation_2_final as job on farm5 (with accepted parameter values) 010221
+	/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/
+
+Submit 5 separate jobs manually 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+mkdir KX003_5/sim2
+mkdir KX003_5/sim2/parameters
+mkdir KX003_5/sim2/summary_stats
+mkdir KX003_5/sim2/trees
+mkdir KX003_5/sim2/scripts
+mkdir KX003_5/sim2/logs
+
+
+export PATH=/software/R-3.6.1/bin:${PATH}
+export R_HOME=$(R RHOME)
+export R_LIBS_USER="/nfs/users/nfs_e/em16/R/x86_64-pc-linux-gnu-library/3.6"
+
+RUNID='KX003_5'
+OUTPUT='/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/sim2/'
+MEM=5000
+QUEUE=long
+CORES=2
+
+bsub -J"${RUNID}" -M${MEM} -R"select[mem>${MEM}] rusage[mem=${MEM}] span[hosts=1]" -n ${CORES} -q ${QUEUE} -e %J.stderr -o %J.stdout \
+"xvfb-run -a Rscript --no-save --no-restore --verbose /lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/sim2/scripts/KX003_simulation2_5.R ${RUNID} ${OUTPUT}  > /lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/sim2/logs/KX003_simulation2_5.Rout 2>&1"
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Run KX003_PPC.R interactively farm
+	/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/sim2/
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+scp -r em16@farm5-login:/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/sim2/*tables* /Users/em16/Documents/PhD/Sequencing_results/DNA_seq/KX003/KX003_5/pop_modelling/PPC_output/
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Compute chi-squared statistics on sample from posterior predictive distribution
+# by running scripts:
+# KX003_resim_conditionals.sh
+# KX003_pp_chi_squared_test.sh
+
+/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+cd /lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/
+
+mkdir PPC_chi_squared
+mkdir PPC_chi_squared/output
+mkdir PPC_chi_squared/output/pp_resim
+mkdir PPC_chi_squared/output/logs
+mkdir PPC_chi_squared/output/pp_tests
+mkdir PPC_chi_squared/output/pp_tests/pdfs
+mkdir PPC_chi_squared/scripts
+
+RUNID='KX003'
+
+
+SOURCE_PATH="/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/PPC_chi_squared/scripts/"
+
+LOGS_PATH="/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/PPC_chi_squared/output/logs/"
+
+# INPUT_PATH='/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/sim2/'
+PP_SIMS_FILE='/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/sim2/KX003_tables'
+
+RESIM_PATH='/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/PPC_chi_squared/output/pp_resim/'
+
+OUTPUT_PATH='/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/PPC_chi_squared/output/pp_tests/'
+
+
+N_PP_SIMS=1000
+
+
+N_RUNS_PER_PP_SIM=5
+
+
+N_RESIMS_PER_RUN=200
+
+N_RESIM_RUNS=$((${N_PP_SIMS}*${N_RUNS_PER_PP_SIM}))
+
+# PARAMS_RESIM="${SOURCE_PATH} ${LOGS_PATH} ${PP_SIMS_FILE} ${RESIM_PATH} ${N_RESIM_RUNS} ${N_RESIMS_PER_RUN}"
+PARAMS_RESIM="${SOURCE_PATH} ${LOGS_PATH} ${PP_SIMS_FILE} ${RESIM_PATH} ${N_RUNS_PER_PP_SIM} ${N_RESIMS_PER_RUN}"
+
+JOB_NAME_RESIM="KX003"
+SH_SCRIPT_RESIM="KX003_resim_conditionals.sh"
+STDOUT_NAME_RESIM="KX003_resim_conditionals"
+
+MEM_RESIM=5000
+QUEUE_RESIM=long
+N_CORES_RESIM=2
+
+
+PARAMS_TEST="${SOURCE_PATH} ${LOGS_PATH} ${PP_SIMS_FILE} ${RESIM_PATH} ${OUTPUT_PATH}"
+
+JOB_NAME_TEST="KX003"
+SH_SCRIPT_TEST="KX003_pp_chi_squared_test.sh"
+STDOUT_NAME_TEST="KX003_pp_chi_squared_test"
+
+MEM_TEST=5000
+QUEUE_TEST=long
+N_CORES_TEST=2
+
+cd ${SOURCE_PATH}
+chmod +x *.sh
+
+
+bsub -G team154-grp -J "${JOB_NAME_RESIM}[1-${N_RESIM_RUNS}]" -q "${QUEUE_RESIM}" -M ${MEM_RESIM} -R "select[mem>${MEM_RESIM}] rusage[mem=${MEM_RESIM}]" -o ${LOGS_PATH}${STDOUT_NAME_RESIM}_%J.stdout -e ${LOGS_PATH}${STDOUT_NAME_RESIM}_%J.stderr "${SOURCE_PATH}${SH_SCRIPT_RESIM} ${PARAMS_RESIM}"
+
+bsub -G team154-grp -J ${JOB_NAME_TEST} -w "done(${JOB_NAME_RESIM})" -q "${QUEUE_TEST}" -M ${MEM_TEST} -R "select[mem>${MEM_TEST}] rusage[mem=${MEM_TEST}] span[hosts=1]" -n "${N_CORES_TEST}" -o ${LOGS_PATH}${STDOUT_NAME_TEST}_%J.stdout -e ${LOGS_PATH}${STDOUT_NAME_TEST}_%J.stderr "${SOURCE_PATH}${SH_SCRIPT_TEST} ${PARAMS_TEST}"
+
+bsub -G team154-grp -J ${JOB_NAME_TEST} -q "${QUEUE_TEST}" -M ${MEM_TEST} -R "select[mem>${MEM_TEST}] rusage[mem=${MEM_TEST}] span[hosts=1]" -n "${N_CORES_TEST}" -o ${LOGS_PATH}${STDOUT_NAME_TEST}_%J.stdout -e ${LOGS_PATH}${STDOUT_NAME_TEST}_%J.stderr "${SOURCE_PATH}${SH_SCRIPT_TEST} ${PARAMS_TEST}"
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Re-running failed resin jobs individually
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# 9 failed out of 5000 - job IDs 4531, 452, 4533, 4534, 4535, 4536, 4538, 4539, 4540
+
+RUNID='KX003'
+
+SOURCE_PATH="/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/PPC_chi_squared/scripts/"
+
+LOGS_PATH="/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/PPC_chi_squared/output/logs_2/"
+
+# INPUT_PATH='/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/sim2/'
+PP_SIMS_FILE='/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/sim2/KX003_tables'
+
+RESIM_PATH='/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/PPC_chi_squared/output/pp_resim_2/'
+
+OUTPUT_PATH='/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/PPC_chi_squared/output/pp_tests_2/'
+
+
+N_PP_SIMS=1000
+
+
+N_RUNS_PER_PP_SIM=5
+
+
+N_RESIMS_PER_RUN=200
+
+N_RESIM_RUNS=$((${N_PP_SIMS}*${N_RUNS_PER_PP_SIM}))
+
+MISSING_JOB_INDEX=4540
+
+# PARAMS_RESIM="${SOURCE_PATH} ${LOGS_PATH} ${PP_SIMS_FILE} ${RESIM_PATH} ${N_RESIM_RUNS} ${N_RESIMS_PER_RUN}"
+# PARAMS_RESIM="${SOURCE_PATH} ${LOGS_PATH} ${PP_SIMS_FILE} ${RESIM_PATH} ${N_RUNS_PER_PP_SIM} ${N_RESIMS_PER_RUN}"
+PARAMS_RESIM="${SOURCE_PATH} ${LOGS_PATH} ${PP_SIMS_FILE} ${RESIM_PATH} ${N_RUNS_PER_PP_SIM} ${N_RESIMS_PER_RUN} ${MISSING_JOB_INDEX}"
+
+JOB_NAME_RESIM="KX003_rerun_resim"
+SH_SCRIPT_RESIM="KX003_rerun_resim_conditionals.sh"
+STDOUT_NAME_RESIM="KX003_rerun_resim_conditionals"
+
+MEM_RESIM=5000
+# QUEUE_RESIM=long
+QUEUE_RESIM=basement
+N_CORES_RESIM=2
+
+
+cd ${SOURCE_PATH}
+chmod +x *.sh
+
+bsub -G team154-grp -J ${JOB_NAME_RESIM} -q "${QUEUE_RESIM}" -M ${MEM_RESIM} -R "select[mem>${MEM_RESIM}] rusage[mem=${MEM_RESIM}]" -o ${LOGS_PATH}${STDOUT_NAME_RESIM}_%J.stdout -e ${LOGS_PATH}${STDOUT_NAME_RESIM}_%J.stderr "${SOURCE_PATH}${SH_SCRIPT_RESIM} ${PARAMS_RESIM}"
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+scp -r em16@farm5-login:/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/KX003_5/PPC_chi_squared/output/pp_tests/pdfs/* /Users/em16/Documents/PhD/Sequencing_results/DNA_seq/KX003/KX003_5/pop_modelling/chi_squared_output/
+

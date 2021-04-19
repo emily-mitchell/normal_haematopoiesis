@@ -1,0 +1,882 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# "bash filters for KX001_4"
+# Author: Emily Mitchell
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------
+# 1a. Run script for filtering caveman output from low input pipeline using -f 3 - see below 
+	cgp-farm-login
+        /lustre/scratch117/casm/team154/em16/KX001/KX001_4/
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Lists of sample and project names created in excel ms44_filter_set_up
+# Run on cgpbar using nohup &
+#-pt: Comma-separated list of project identifiers containing the samples of interest
+#-st: Comma-separated list of sample identifiers whose presence is required in the matched project directories listed under –pt
+#-pn: Comma-separated list of project identifiers containing the matched control samples
+#-sn: Comma-separated list of sample identifiers of control samples whose presence is required in the matched project directories listed under -pn
+#-o: Output directory
+
+# See other options /lustre/scratch116/casm/cgp/users/ms44/scripts/runLCMFiltering_by_sample_project.sh --help (assume data aligned to hg19)
+# If coverage low (~15) might be best to lower the variant fragment threshold to 3 through the parameter -f (default:4).
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Run Mathijs low input pipeline filter using nw wrapper 
+/lustre/scratch117/casm/team154/em16/KX001/KX001_4/
+Run for the 25 PB colonies (1st batch)
+Then 383 HSC colonies (split into 2 batches)
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+nohup python3 /nfs/team78pc/nw14/LCM_SCRIPT/run_lcm_wrapper.py --f 3 --pt 1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882 --pn 1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548 --st PD40521wt,PD40521wv,PD40521ww,PD40521wx,PD40521wy,PD40521wz,PD40521xa,PD40521xb,PD40521xc,PD40521xd,PD40521xe,PD40521xf,PD40521xg,PD40521xh,PD40521xi,PD40521xj,PD40521xk,PD40521xl,PD40521xm,PD40521xn,PD40521xo,PD40521xp,PD40521xq,PD40521xr,PD40521ac,PD40521wu --sn PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is --o /lustre/scratch117/casm/team154/em16/KX001/KX001_4/subs/ &> mylog.log &
+
+nohup python3 /nfs/team78pc/nw14/LCM_SCRIPT/run_lcm_wrapper.py --f 3 --pt 1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882 --st PD40521aa,PD40521ab,PD40521ac,PD40521ad,PD40521ae,PD40521af,PD40521ag,PD40521ah,PD40521ag,PD40521ah,PD40521ai,PD40521aj,PD40521ak,PD40521al,PD40521am,PD40521an,PD40521ao,PD40521ap,PD40521aq,PD40521ar,PD40521as,PD40521at,PD40521au,PD40521av,PD40521aw,PD40521ax,PD40521ay,PD40521az,PD40521ba,PD40521bb,PD40521bc,PD40521bd,PD40521be,PD40521bf,PD40521bg,PD40521bh,PD40521bi,PD40521bj,PD40521bk,PD40521bl,PD40521bm,PD40521bn,PD40521bo,PD40521bp,PD40521bq,PD40521br,PD40521bs,PD40521bt,PD40521bu,PD40521bv,PD40521bw,PD40521bx,PD40521by,PD40521bz,PD40521ca,PD40521cb,PD40521cc,PD40521cd,PD40521ce,PD40521cf,PD40521cg,PD40521ch,PD40521ci,PD40521cj,PD40521ck,PD40521cl,PD40521cm,PD40521cn,PD40521co,PD40521cp,PD40521cq,PD40521cr,PD40521cs,PD40521ct,PD40521cu,PD40521cv,PD40521cw,PD40521cx,PD40521cy,PD40521cz,PD40521da,PD40521db,PD40521dc,PD40521dd,PD40521de,PD40521df,PD40521dg,PD40521dh,PD40521di,PD40521dj,PD40521dk,PD40521dl,PD40521dm,PD40521dn,PD40521do,PD40521dp,PD40521dq,PD40521dr,PD40521ds,PD40521dt,PD40521du,PD40521dv,PD40521dw,PD40521dx,PD40521dy,PD40521dz,PD40521ea,PD40521eb,PD40521ec,PD40521ed,PD40521ee,PD40521ef,PD40521eg,PD40521eh,PD40521ei,PD40521ej,PD40521ek,PD40521el,PD40521em,PD40521en,PD40521eo,PD40521ep,PD40521eq,PD40521er,PD40521es,PD40521et,PD40521eu,PD40521ev,PD40521ew,PD40521ex,PD40521ey,PD40521ez,PD40521fa,PD40521fb,PD40521fc,PD40521fd,PD40521fe,PD40521ff,PD40521fg,PD40521fh,PD40521fi,PD40521fj,PD40521fk,PD40521fl,PD40521fm,PD40521fn,PD40521fo,PD40521fp,PD40521fq,PD40521fr,PD40521fs,PD40521ft,PD40521fu,PD40521fv,PD40521fw,PD40521fx,PD40521fy,PD40521fz,PD40521ga,PD40521gb,PD40521gc,PD40521gd,PD40521ge,PD40521gf,PD40521gg,PD40521gh,PD40521gi,PD40521gj,PD40521gk,PD40521gl,PD40521gm,PD40521gn,PD40521go,PD40521gp,PD40521gq,PD40521gr,PD40521gs,PD40521gt,PD40521gu,PD40521gv,PD40521gw,PD40521gx,PD40521gy,PD40521gz,PD40521ha,PD40521hb,PD40521hc,PD40521hd,PD40521he,PD40521hf,PD40521hg,PD40521hh,PD40521hi --pn 1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548 --sn PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is --o /lustre/scratch117/casm/team154/em16/KX001/KX001_4/subs/ &
+
+nohup python3 /nfs/team78pc/nw14/LCM_SCRIPT/run_lcm_wrapper.py --f 3 --pt 1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882,1882 --st PD40521hj,PD40521hk,PD40521hl,PD40521hm,PD40521hn,PD40521ho,PD40521hp,PD40521hq,PD40521hr,PD40521hq,PD40521hr,PD40521hs,PD40521ht,PD40521hu,PD40521hv,PD40521hw,PD40521hx,PD40521hy,PD40521hz,PD40521ia,PD40521ib,PD40521ic,PD40521id,PD40521ie,PD40521if,PD40521ig,PD40521ih,PD40521ii,PD40521ij,PD40521ik,PD40521il,PD40521im,PD40521in,PD40521io,PD40521ip,PD40521iq,PD40521ir,PD40521is,PD40521it,PD40521iu,PD40521iv,PD40521iw,PD40521ix,PD40521iy,PD40521iz,PD40521ja,PD40521jb,PD40521jc,PD40521jd,PD40521je,PD40521jf,PD40521jg,PD40521jh,PD40521ji,PD40521jj,PD40521jk,PD40521jl,PD40521jm,PD40521jn,PD40521jo,PD40521jp,PD40521jq,PD40521jr,PD40521js,PD40521jt,PD40521ju,PD40521jv,PD40521jx,PD40521jy,PD40521jz,PD40521ka,PD40521kb,PD40521kc,PD40521kd,PD40521ke,PD40521kf,PD40521kg,PD40521kh,PD40521ki,PD40521kj,PD40521kk,PD40521kl,PD40521km,PD40521kn,PD40521ko,PD40521kp,PD40521kq,PD40521kr,PD40521ks,PD40521kt,PD40521ku,PD40521kv,PD40521kw,PD40521kx,PD40521ky,PD40521kz,PD40521la,PD40521lb,PD40521lc,PD40521ld,PD40521le,PD40521lf,PD40521lg,PD40521lh,PD40521li,PD40521lj,PD40521lk,PD40521ll,PD40521lm,PD40521ln,PD40521lo,PD40521lp,PD40521lq,PD40521lr,PD40521ls,PD40521lt,PD40521lu,PD40521lv,PD40521lw,PD40521lx,PD40521ly,PD40521lz,PD40521ma,PD40521mb,PD40521mc,PD40521md,PD40521me,PD40521mf,PD40521mg,PD40521mh,PD40521mi,PD40521mj,PD40521mk,PD40521ml,PD40521mm,PD40521mn,PD40521mo,PD40521mp,PD40521mq,PD40521mr,PD40521ms,PD40521mt,PD40521mu,PD40521mv,PD40521mw,PD40521mx,PD40521my,PD40521mz,PD40521n,PD40521na,PD40521nb,PD40521nc,PD40521nd,PD40521ne,PD40521nf,PD40521ng,PD40521nh,PD40521ni,PD40521nj,PD40521nk,PD40521nl,PD40521nm,PD40521nn,PD40521no,PD40521np,PD40521nq,PD40521nr,PD40521ns,PD40521nt,PD40521nu,PD40521nv,PD40521nw,PD40521nx,PD40521ny,PD40521nz,PD40521o,PD40521oa,PD40521ob,PD40521oc,PD40521od,PD40521oe,PD40521of,PD40521og,PD40521p,PD40521q,PD40521r,PD40521s,PD40521t,PD40521u,PD40521v,PD40521w,PD40521x,PD40521y,PD40521z --pn 1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548,1548 --sn PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is,PDv37is --o /lustre/scratch117/casm/team154/em16/KX001/KX001_4/subs/ &
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 2.a Check number of lines in the complete_final_retained_3.vcf files 
+/lustre/scratch117/casm/team154/em16/KX001/KX001_4/subs/
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+wc -l *complete_final_retained_3.vcf
+
+    29564 PD40521aa_complete_final_retained_3.vcf
+    29035 PD40521ab_complete_final_retained_3.vcf
+    28720 PD40521ac_complete_final_retained_3.vcf
+    30116 PD40521ad_complete_final_retained_3.vcf
+    30035 PD40521ae_complete_final_retained_3.vcf
+    30470 PD40521af_complete_final_retained_3.vcf
+    38785 PD40521ag_complete_final_retained_3.vcf
+    29769 PD40521ah_complete_final_retained_3.vcf
+    29414 PD40521ai_complete_final_retained_3.vcf
+    30452 PD40521aj_complete_final_retained_3.vcf
+    30637 PD40521ak_complete_final_retained_3.vcf
+    29623 PD40521al_complete_final_retained_3.vcf
+    29945 PD40521am_complete_final_retained_3.vcf
+    29920 PD40521an_complete_final_retained_3.vcf
+    30593 PD40521ao_complete_final_retained_3.vcf
+    30867 PD40521ap_complete_final_retained_3.vcf
+    29945 PD40521aq_complete_final_retained_3.vcf
+    30647 PD40521ar_complete_final_retained_3.vcf
+    29816 PD40521as_complete_final_retained_3.vcf
+    29305 PD40521at_complete_final_retained_3.vcf
+    30931 PD40521au_complete_final_retained_3.vcf
+    30279 PD40521av_complete_final_retained_3.vcf
+    30688 PD40521aw_complete_final_retained_3.vcf
+    29764 PD40521ax_complete_final_retained_3.vcf
+    30642 PD40521ay_complete_final_retained_3.vcf
+    29438 PD40521az_complete_final_retained_3.vcf
+    30141 PD40521ba_complete_final_retained_3.vcf
+    28942 PD40521bb_complete_final_retained_3.vcf
+    28950 PD40521bc_complete_final_retained_3.vcf
+    29112 PD40521bd_complete_final_retained_3.vcf
+    28915 PD40521be_complete_final_retained_3.vcf
+    29456 PD40521bf_complete_final_retained_3.vcf
+    29648 PD40521bg_complete_final_retained_3.vcf
+    30763 PD40521bh_complete_final_retained_3.vcf
+    29069 PD40521bi_complete_final_retained_3.vcf
+    28872 PD40521bj_complete_final_retained_3.vcf
+    29353 PD40521bk_complete_final_retained_3.vcf
+    29656 PD40521bl_complete_final_retained_3.vcf
+    29580 PD40521bm_complete_final_retained_3.vcf
+    29034 PD40521bn_complete_final_retained_3.vcf
+    28462 PD40521bo_complete_final_retained_3.vcf
+    29211 PD40521bp_complete_final_retained_3.vcf
+    29568 PD40521bq_complete_final_retained_3.vcf
+    29240 PD40521br_complete_final_retained_3.vcf
+    29068 PD40521bs_complete_final_retained_3.vcf
+    28245 PD40521bt_complete_final_retained_3.vcf
+    29021 PD40521bu_complete_final_retained_3.vcf
+    29960 PD40521bv_complete_final_retained_3.vcf
+    29083 PD40521bw_complete_final_retained_3.vcf
+    28729 PD40521bx_complete_final_retained_3.vcf
+    29186 PD40521by_complete_final_retained_3.vcf
+    29410 PD40521bz_complete_final_retained_3.vcf
+    27830 PD40521ca_complete_final_retained_3.vcf
+    30514 PD40521cb_complete_final_retained_3.vcf
+    29387 PD40521cc_complete_final_retained_3.vcf
+    29587 PD40521cd_complete_final_retained_3.vcf
+    30612 PD40521ce_complete_final_retained_3.vcf
+    28324 PD40521cf_complete_final_retained_3.vcf
+    30628 PD40521cg_complete_final_retained_3.vcf
+    28379 PD40521ch_complete_final_retained_3.vcf
+    29396 PD40521ci_complete_final_retained_3.vcf
+    28765 PD40521cj_complete_final_retained_3.vcf
+    30283 PD40521ck_complete_final_retained_3.vcf
+    30711 PD40521cl_complete_final_retained_3.vcf
+    31441 PD40521cm_complete_final_retained_3.vcf
+    26524 PD40521cn_complete_final_retained_3.vcf
+    29320 PD40521co_complete_final_retained_3.vcf
+    32896 PD40521cp_complete_final_retained_3.vcf
+    32264 PD40521cq_complete_final_retained_3.vcf
+    31919 PD40521cr_complete_final_retained_3.vcf
+    32698 PD40521cs_complete_final_retained_3.vcf
+    31888 PD40521ct_complete_final_retained_3.vcf
+    27317 PD40521cu_complete_final_retained_3.vcf
+    28077 PD40521cv_complete_final_retained_3.vcf
+    28964 PD40521cw_complete_final_retained_3.vcf
+    28838 PD40521cx_complete_final_retained_3.vcf
+    28995 PD40521cy_complete_final_retained_3.vcf
+    28414 PD40521cz_complete_final_retained_3.vcf
+    29420 PD40521da_complete_final_retained_3.vcf
+    27812 PD40521db_complete_final_retained_3.vcf
+    28269 PD40521dc_complete_final_retained_3.vcf
+    29371 PD40521dd_complete_final_retained_3.vcf
+    28867 PD40521de_complete_final_retained_3.vcf
+    27260 PD40521df_complete_final_retained_3.vcf
+    30353 PD40521dg_complete_final_retained_3.vcf
+    29004 PD40521dh_complete_final_retained_3.vcf
+    30303 PD40521di_complete_final_retained_3.vcf
+    30230 PD40521dj_complete_final_retained_3.vcf
+    30146 PD40521dk_complete_final_retained_3.vcf
+    29611 PD40521dl_complete_final_retained_3.vcf
+    29978 PD40521dm_complete_final_retained_3.vcf
+    28380 PD40521dn_complete_final_retained_3.vcf
+    29287 PD40521do_complete_final_retained_3.vcf
+    29711 PD40521dp_complete_final_retained_3.vcf
+    28811 PD40521dq_complete_final_retained_3.vcf
+    29511 PD40521dr_complete_final_retained_3.vcf
+    28236 PD40521ds_complete_final_retained_3.vcf
+    29976 PD40521dt_complete_final_retained_3.vcf
+    29622 PD40521du_complete_final_retained_3.vcf
+    28774 PD40521dv_complete_final_retained_3.vcf
+    28313 PD40521dw_complete_final_retained_3.vcf
+    28617 PD40521dx_complete_final_retained_3.vcf
+    28286 PD40521dy_complete_final_retained_3.vcf
+    29268 PD40521dz_complete_final_retained_3.vcf
+    28776 PD40521ea_complete_final_retained_3.vcf
+    28809 PD40521eb_complete_final_retained_3.vcf
+    29512 PD40521ec_complete_final_retained_3.vcf
+    28286 PD40521ed_complete_final_retained_3.vcf
+    27501 PD40521ee_complete_final_retained_3.vcf
+    28232 PD40521ef_complete_final_retained_3.vcf
+    29119 PD40521eg_complete_final_retained_3.vcf
+    28836 PD40521eh_complete_final_retained_3.vcf
+    28995 PD40521ei_complete_final_retained_3.vcf
+    25628 PD40521ej_complete_final_retained_3.vcf
+    27957 PD40521ek_complete_final_retained_3.vcf
+    29553 PD40521el_complete_final_retained_3.vcf
+    29320 PD40521em_complete_final_retained_3.vcf
+    29034 PD40521en_complete_final_retained_3.vcf
+    28844 PD40521eo_complete_final_retained_3.vcf
+    29743 PD40521ep_complete_final_retained_3.vcf
+    28781 PD40521eq_complete_final_retained_3.vcf
+    28238 PD40521er_complete_final_retained_3.vcf
+    29445 PD40521es_complete_final_retained_3.vcf
+    26663 PD40521et_complete_final_retained_3.vcf
+    27896 PD40521eu_complete_final_retained_3.vcf
+    28692 PD40521ev_complete_final_retained_3.vcf
+    29744 PD40521ew_complete_final_retained_3.vcf
+    29994 PD40521ex_complete_final_retained_3.vcf
+    28806 PD40521ey_complete_final_retained_3.vcf
+    28793 PD40521ez_complete_final_retained_3.vcf
+    28561 PD40521fa_complete_final_retained_3.vcf
+    29122 PD40521fb_complete_final_retained_3.vcf
+    29425 PD40521fc_complete_final_retained_3.vcf
+    29142 PD40521fd_complete_final_retained_3.vcf
+    29146 PD40521fe_complete_final_retained_3.vcf
+    27627 PD40521ff_complete_final_retained_3.vcf
+    28507 PD40521fg_complete_final_retained_3.vcf
+    28524 PD40521fh_complete_final_retained_3.vcf
+    28926 PD40521fi_complete_final_retained_3.vcf
+    28365 PD40521fj_complete_final_retained_3.vcf
+    26375 PD40521fk_complete_final_retained_3.vcf
+    27310 PD40521fl_complete_final_retained_3.vcf
+    30643 PD40521fm_complete_final_retained_3.vcf
+    29605 PD40521fn_complete_final_retained_3.vcf
+    28601 PD40521fo_complete_final_retained_3.vcf
+    28184 PD40521fp_complete_final_retained_3.vcf
+    27867 PD40521fq_complete_final_retained_3.vcf
+    27357 PD40521fr_complete_final_retained_3.vcf
+    28300 PD40521fs_complete_final_retained_3.vcf
+    28732 PD40521ft_complete_final_retained_3.vcf
+    29571 PD40521fu_complete_final_retained_3.vcf
+    28956 PD40521fv_complete_final_retained_3.vcf
+    28491 PD40521fw_complete_final_retained_3.vcf
+    28120 PD40521fx_complete_final_retained_3.vcf
+    27320 PD40521fy_complete_final_retained_3.vcf
+    28002 PD40521fz_complete_final_retained_3.vcf
+    28112 PD40521ga_complete_final_retained_3.vcf
+    28016 PD40521gb_complete_final_retained_3.vcf
+    28752 PD40521gc_complete_final_retained_3.vcf
+    29093 PD40521gd_complete_final_retained_3.vcf
+    27057 PD40521ge_complete_final_retained_3.vcf
+    26191 PD40521gf_complete_final_retained_3.vcf
+    27463 PD40521gg_complete_final_retained_3.vcf
+    28361 PD40521gh_complete_final_retained_3.vcf
+    28702 PD40521gi_complete_final_retained_3.vcf
+    28169 PD40521gj_complete_final_retained_3.vcf
+    27939 PD40521gk_complete_final_retained_3.vcf
+    27936 PD40521gl_complete_final_retained_3.vcf
+    26459 PD40521gm_complete_final_retained_3.vcf
+    25844 PD40521gn_complete_final_retained_3.vcf
+    28107 PD40521go_complete_final_retained_3.vcf
+    21776 PD40521gp_complete_final_retained_3.vcf
+    24905 PD40521gq_complete_final_retained_3.vcf
+    23767 PD40521gr_complete_final_retained_3.vcf
+    22525 PD40521gs_complete_final_retained_3.vcf
+    30478 PD40521gt_complete_final_retained_3.vcf
+    29299 PD40521gu_complete_final_retained_3.vcf
+    29557 PD40521gv_complete_final_retained_3.vcf
+    24612 PD40521gw_complete_final_retained_3.vcf
+    26188 PD40521gx_complete_final_retained_3.vcf
+    26412 PD40521gy_complete_final_retained_3.vcf
+    28178 PD40521gz_complete_final_retained_3.vcf
+    31625 PD40521ha_complete_final_retained_3.vcf
+    30758 PD40521hb_complete_final_retained_3.vcf
+    29796 PD40521hc_complete_final_retained_3.vcf
+    28155 PD40521hd_complete_final_retained_3.vcf
+    21415 PD40521he_complete_final_retained_3.vcf
+    26638 PD40521hf_complete_final_retained_3.vcf
+    27467 PD40521hg_complete_final_retained_3.vcf
+    28704 PD40521hh_complete_final_retained_3.vcf
+    30825 PD40521hi_complete_final_retained_3.vcf
+    28855 PD40521hj_complete_final_retained_3.vcf
+    27107 PD40521hk_complete_final_retained_3.vcf
+    27205 PD40521hl_complete_final_retained_3.vcf
+    29464 PD40521hm_complete_final_retained_3.vcf
+    25226 PD40521hn_complete_final_retained_3.vcf
+    28568 PD40521ho_complete_final_retained_3.vcf
+    26277 PD40521hp_complete_final_retained_3.vcf
+    25979 PD40521hq_complete_final_retained_3.vcf
+    24128 PD40521hr_complete_final_retained_3.vcf
+    29985 PD40521hs_complete_final_retained_3.vcf
+    27251 PD40521ht_complete_final_retained_3.vcf
+    26758 PD40521hu_complete_final_retained_3.vcf
+    24300 PD40521hv_complete_final_retained_3.vcf
+    22205 PD40521hw_complete_final_retained_3.vcf
+    29657 PD40521hx_complete_final_retained_3.vcf
+    26636 PD40521hy_complete_final_retained_3.vcf
+    28022 PD40521hz_complete_final_retained_3.vcf
+    29890 PD40521ia_complete_final_retained_3.vcf
+    26033 PD40521ib_complete_final_retained_3.vcf
+    25578 PD40521ic_complete_final_retained_3.vcf
+    30742 PD40521id_complete_final_retained_3.vcf
+    22268 PD40521ie_complete_final_retained_3.vcf
+    29312 PD40521if_complete_final_retained_3.vcf
+    28627 PD40521ig_complete_final_retained_3.vcf
+    29001 PD40521ih_complete_final_retained_3.vcf
+    27560 PD40521ii_complete_final_retained_3.vcf
+    23864 PD40521ij_complete_final_retained_3.vcf
+    29416 PD40521ik_complete_final_retained_3.vcf
+    31424 PD40521il_complete_final_retained_3.vcf
+    21275 PD40521im_complete_final_retained_3.vcf
+    24310 PD40521in_complete_final_retained_3.vcf
+    30949 PD40521io_complete_final_retained_3.vcf
+    29395 PD40521ip_complete_final_retained_3.vcf
+    27465 PD40521iq_complete_final_retained_3.vcf
+    27613 PD40521ir_complete_final_retained_3.vcf
+    25046 PD40521is_complete_final_retained_3.vcf
+    31553 PD40521it_complete_final_retained_3.vcf
+    29152 PD40521iu_complete_final_retained_3.vcf
+    26110 PD40521iv_complete_final_retained_3.vcf
+    29460 PD40521iw_complete_final_retained_3.vcf
+    26913 PD40521ix_complete_final_retained_3.vcf
+    28312 PD40521iy_complete_final_retained_3.vcf
+    24165 PD40521iz_complete_final_retained_3.vcf
+    25700 PD40521ja_complete_final_retained_3.vcf
+    24268 PD40521jb_complete_final_retained_3.vcf
+    28474 PD40521jc_complete_final_retained_3.vcf
+    29658 PD40521jd_complete_final_retained_3.vcf
+    28800 PD40521je_complete_final_retained_3.vcf
+    30567 PD40521jf_complete_final_retained_3.vcf
+    28547 PD40521jg_complete_final_retained_3.vcf
+    27336 PD40521jh_complete_final_retained_3.vcf
+    28306 PD40521ji_complete_final_retained_3.vcf
+    20508 PD40521jj_complete_final_retained_3.vcf
+    27800 PD40521jk_complete_final_retained_3.vcf
+    26238 PD40521jl_complete_final_retained_3.vcf
+    31372 PD40521jm_complete_final_retained_3.vcf
+    31965 PD40521jn_complete_final_retained_3.vcf
+    27611 PD40521jo_complete_final_retained_3.vcf
+    28179 PD40521jp_complete_final_retained_3.vcf
+    18470 PD40521jq_complete_final_retained_3.vcf
+    22253 PD40521jr_complete_final_retained_3.vcf
+    26319 PD40521js_complete_final_retained_3.vcf
+    22041 PD40521jt_complete_final_retained_3.vcf
+    28489 PD40521ju_complete_final_retained_3.vcf
+    26876 PD40521jv_complete_final_retained_3.vcf
+    26354 PD40521jx_complete_final_retained_3.vcf
+    22612 PD40521jy_complete_final_retained_3.vcf
+    25300 PD40521jz_complete_final_retained_3.vcf
+    23612 PD40521ka_complete_final_retained_3.vcf
+    28030 PD40521kb_complete_final_retained_3.vcf
+    27028 PD40521kc_complete_final_retained_3.vcf
+    29733 PD40521kd_complete_final_retained_3.vcf
+    30041 PD40521ke_complete_final_retained_3.vcf
+    29452 PD40521kf_complete_final_retained_3.vcf
+    28485 PD40521kg_complete_final_retained_3.vcf
+    27853 PD40521kh_complete_final_retained_3.vcf
+    26829 PD40521ki_complete_final_retained_3.vcf
+    28517 PD40521kj_complete_final_retained_3.vcf
+    27672 PD40521kk_complete_final_retained_3.vcf
+    27168 PD40521kl_complete_final_retained_3.vcf
+    28394 PD40521km_complete_final_retained_3.vcf
+    28226 PD40521kn_complete_final_retained_3.vcf
+    28717 PD40521ko_complete_final_retained_3.vcf
+    27429 PD40521kp_complete_final_retained_3.vcf
+    27791 PD40521kq_complete_final_retained_3.vcf
+    29482 PD40521kr_complete_final_retained_3.vcf
+    28439 PD40521ks_complete_final_retained_3.vcf
+    29473 PD40521kt_complete_final_retained_3.vcf
+    30000 PD40521ku_complete_final_retained_3.vcf
+    30180 PD40521kv_complete_final_retained_3.vcf
+    28550 PD40521kw_complete_final_retained_3.vcf
+    29084 PD40521kx_complete_final_retained_3.vcf
+    29061 PD40521ky_complete_final_retained_3.vcf
+    30466 PD40521kz_complete_final_retained_3.vcf
+    30205 PD40521la_complete_final_retained_3.vcf
+    28682 PD40521lb_complete_final_retained_3.vcf
+    29675 PD40521lc_complete_final_retained_3.vcf
+    27967 PD40521ld_complete_final_retained_3.vcf
+    29205 PD40521le_complete_final_retained_3.vcf
+    28393 PD40521lf_complete_final_retained_3.vcf
+    29359 PD40521lg_complete_final_retained_3.vcf
+    29435 PD40521lh_complete_final_retained_3.vcf
+    27531 PD40521li_complete_final_retained_3.vcf
+    28707 PD40521lj_complete_final_retained_3.vcf
+    27532 PD40521lk_complete_final_retained_3.vcf
+    28657 PD40521ll_complete_final_retained_3.vcf
+    28235 PD40521lm_complete_final_retained_3.vcf
+    28378 PD40521ln_complete_final_retained_3.vcf
+    28199 PD40521lo_complete_final_retained_3.vcf
+    27751 PD40521lp_complete_final_retained_3.vcf
+    29986 PD40521lq_complete_final_retained_3.vcf
+    28074 PD40521lr_complete_final_retained_3.vcf
+    27625 PD40521ls_complete_final_retained_3.vcf
+    28590 PD40521lt_complete_final_retained_3.vcf
+    26306 PD40521lu_complete_final_retained_3.vcf
+    27743 PD40521lv_complete_final_retained_3.vcf
+    27755 PD40521lw_complete_final_retained_3.vcf
+    28145 PD40521lx_complete_final_retained_3.vcf
+    28141 PD40521ly_complete_final_retained_3.vcf
+    28984 PD40521lz_complete_final_retained_3.vcf
+    29641 PD40521ma_complete_final_retained_3.vcf
+    29224 PD40521mb_complete_final_retained_3.vcf
+    26806 PD40521mc_complete_final_retained_3.vcf
+    28071 PD40521md_complete_final_retained_3.vcf
+    29019 PD40521me_complete_final_retained_3.vcf
+    29161 PD40521mf_complete_final_retained_3.vcf
+    25957 PD40521mg_complete_final_retained_3.vcf
+    29835 PD40521mh_complete_final_retained_3.vcf
+    27747 PD40521mi_complete_final_retained_3.vcf
+    31173 PD40521mj_complete_final_retained_3.vcf
+    28886 PD40521mk_complete_final_retained_3.vcf
+    27280 PD40521ml_complete_final_retained_3.vcf
+    27873 PD40521mm_complete_final_retained_3.vcf
+    28377 PD40521mn_complete_final_retained_3.vcf
+    28805 PD40521mo_complete_final_retained_3.vcf
+    26925 PD40521mp_complete_final_retained_3.vcf
+    27048 PD40521mq_complete_final_retained_3.vcf
+    29687 PD40521mr_complete_final_retained_3.vcf
+    26898 PD40521ms_complete_final_retained_3.vcf
+    27578 PD40521mt_complete_final_retained_3.vcf
+    29102 PD40521mu_complete_final_retained_3.vcf
+    27975 PD40521mv_complete_final_retained_3.vcf
+    29420 PD40521mw_complete_final_retained_3.vcf
+    31030 PD40521mx_complete_final_retained_3.vcf
+    28876 PD40521my_complete_final_retained_3.vcf
+    30032 PD40521mz_complete_final_retained_3.vcf
+    30141 PD40521na_complete_final_retained_3.vcf
+    26343 PD40521nb_complete_final_retained_3.vcf
+    26028 PD40521nc_complete_final_retained_3.vcf
+    32595 PD40521n_complete_final_retained_3.vcf
+    28346 PD40521nd_complete_final_retained_3.vcf
+    28057 PD40521ne_complete_final_retained_3.vcf
+    28046 PD40521nf_complete_final_retained_3.vcf
+    31307 PD40521ng_complete_final_retained_3.vcf
+    29584 PD40521nh_complete_final_retained_3.vcf
+    27848 PD40521ni_complete_final_retained_3.vcf
+    29532 PD40521nj_complete_final_retained_3.vcf
+    26196 PD40521nk_complete_final_retained_3.vcf
+    27817 PD40521nl_complete_final_retained_3.vcf
+    27726 PD40521nm_complete_final_retained_3.vcf
+    26966 PD40521nn_complete_final_retained_3.vcf
+    26766 PD40521no_complete_final_retained_3.vcf
+    28803 PD40521np_complete_final_retained_3.vcf
+    27483 PD40521nq_complete_final_retained_3.vcf
+    27154 PD40521nr_complete_final_retained_3.vcf
+    29430 PD40521ns_complete_final_retained_3.vcf
+    27034 PD40521nt_complete_final_retained_3.vcf
+    26736 PD40521nu_complete_final_retained_3.vcf
+    28909 PD40521nv_complete_final_retained_3.vcf
+    26142 PD40521nw_complete_final_retained_3.vcf
+    27243 PD40521nx_complete_final_retained_3.vcf
+    28630 PD40521ny_complete_final_retained_3.vcf
+    29029 PD40521nz_complete_final_retained_3.vcf
+    28691 PD40521oa_complete_final_retained_3.vcf
+    30654 PD40521ob_complete_final_retained_3.vcf
+    27523 PD40521oc_complete_final_retained_3.vcf
+    32670 PD40521o_complete_final_retained_3.vcf
+    28676 PD40521od_complete_final_retained_3.vcf
+    28314 PD40521oe_complete_final_retained_3.vcf
+    24809 PD40521of_complete_final_retained_3.vcf
+    25822 PD40521og_complete_final_retained_3.vcf
+    32512 PD40521p_complete_final_retained_3.vcf
+    32669 PD40521q_complete_final_retained_3.vcf
+    32953 PD40521r_complete_final_retained_3.vcf
+    32668 PD40521s_complete_final_retained_3.vcf
+    32903 PD40521t_complete_final_retained_3.vcf
+    32665 PD40521u_complete_final_retained_3.vcf
+    32871 PD40521v_complete_final_retained_3.vcf
+    32960 PD40521w_complete_final_retained_3.vcf
+    31016 PD40521wt_complete_final_retained_3.vcf
+    29424 PD40521wu_complete_final_retained_3.vcf
+    33207 PD40521wv_complete_final_retained_3.vcf
+    32562 PD40521ww_complete_final_retained_3.vcf
+    33042 PD40521wx_complete_final_retained_3.vcf
+    33008 PD40521wy_complete_final_retained_3.vcf
+    33265 PD40521wz_complete_final_retained_3.vcf
+    32517 PD40521xa_complete_final_retained_3.vcf
+    33459 PD40521xb_complete_final_retained_3.vcf
+    32826 PD40521xc_complete_final_retained_3.vcf
+    30552 PD40521x_complete_final_retained_3.vcf
+    33162 PD40521xd_complete_final_retained_3.vcf
+    32741 PD40521xe_complete_final_retained_3.vcf
+    32515 PD40521xf_complete_final_retained_3.vcf
+    32019 PD40521xg_complete_final_retained_3.vcf
+    30516 PD40521xh_complete_final_retained_3.vcf
+    30939 PD40521xi_complete_final_retained_3.vcf
+    30987 PD40521xj_complete_final_retained_3.vcf
+    32411 PD40521xk_complete_final_retained_3.vcf
+    30699 PD40521xl_complete_final_retained_3.vcf
+    32556 PD40521xm_complete_final_retained_3.vcf
+    33085 PD40521xn_complete_final_retained_3.vcf
+    33490 PD40521xo_complete_final_retained_3.vcf
+    27276 PD40521xp_complete_final_retained_3.vcf
+    32493 PD40521xq_complete_final_retained_3.vcf
+    27483 PD40521xr_complete_final_retained_3.vcf
+    31096 PD40521y_complete_final_retained_3.vcf
+    28973 PD40521z_complete_final_retained_3.vcf
+ 11721785 total
+
+# Total 408 files
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 3. Get one long bed file of all the subs, copy to new directory, create output file 
+
+/lustre/scratch117/casm/team154/em16/KX001/KX001_4/subs/
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+cut -f 1,2,4,5 *complete_final_retained_3.vcf | sort | uniq > KX001_4_filtered_subs.bed
+grep -v "#" KX001_4_filtered_subs.bed > KX001_4_filtered_subs_no#.bed # remove lines starting with "#"
+mv KX001_4_filtered_subs_no#.bed KX001_4_filtered_subs.bed
+
+#245676 KX001_4_filtered_subs.bed
+
+mkdir output
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 4. Run cgpVAF script to create cgpVAF commands that are split per chromosome  
+        On cgpbar
+        /lustre/scratch117/casm/team154/em16/KX001/KX001_4/subs/
+        Creates: cgpVafChr.cmd (commands split per chr) cgpVafConcat.cmd (commands to concatenate split output) run_bsub.sh (script to set off commands in first two files)
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+module load cgpVAFcommand
+
+createVafCmd.pl -pid 1882  -o output -g /lustre/scratch119/casm/team78pipelines/reference/human/GRCh37d5/genome.fa -hdr -mq 30  -bo 1  -b KX001_4_filtered_subs.bed
+                                               
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 5. Modify config.ini file (in output directory) to have approx 10 bams per job (splits by bams as well as by chr)  
+	/lustre/scratch117/casm/team154/em16/KX001/KX001_4/subs/output/
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+[1882]
+PDv37is_UNM1= <<EOT
+PD40521n
+PD40521wt
+PD40521xc
+PD40521xd
+PD40521xe
+PD40521xf
+PD40521xg
+PD40521xh
+PD40521xi
+PD40521xj
+EOT
+PDv37is_UNM2= <<EOT
+PD40521xk
+PD40521xl
+PD40521wu
+PD40521xm
+PD40521xn
+PD40521xo
+PD40521xp
+PD40521xq
+PD40521xr
+PD40521wv
+EOT
+PDv37is_UNM3= <<EOT
+PD40521ww
+PD40521wx
+PD40521wy
+PD40521wz
+PD40521xa
+PD40521xb
+PD40521w
+PD40521di
+PD40521dj
+PD40521dk
+EOT
+PDv37is_UNM4= <<EOT
+PD40521dl
+PD40521dm
+PD40521dn
+PD40521do
+PD40521dp
+PD40521dq
+PD40521dr
+PD40521x
+PD40521ds
+PD40521dt
+EOT
+PDv37is_UNM5= <<EOT
+PD40521du
+PD40521dv
+PD40521dw
+PD40521dx
+PD40521dy
+PD40521dz
+PD40521ea
+PD40521eb
+PD40521y
+PD40521ec
+EOT
+PDv37is_UNM6= <<EOT
+PD40521ed
+PD40521ee
+PD40521ef
+PD40521eg
+PD40521eh
+PD40521ei
+PD40521ej
+PD40521ek
+PD40521el
+PD40521z
+EOT
+PDv37is_UNM7= <<EOT
+PD40521em
+PD40521en
+PD40521eo
+PD40521ep
+PD40521eq
+PD40521er
+PD40521es
+PD40521et
+PD40521eu
+PD40521ev
+EOT
+PDv37is_UNM8= <<EOT
+PD40521aa
+PD40521ew
+PD40521ex
+PD40521ey
+PD40521ez
+PD40521fa
+PD40521fb
+PD40521fc
+PD40521fd
+PD40521fe
+EOT
+PDv37is_UNM9= <<EOT
+PD40521ff
+PD40521ab
+PD40521fg
+PD40521fh
+PD40521fi
+PD40521fj
+PD40521fk
+PD40521fl
+PD40521fm
+PD40521fn
+EOT
+PDv37is_UNM10= <<EOT
+PD40521fo
+PD40521fp
+PD40521ac
+PD40521fq
+PD40521fr
+PD40521fs
+PD40521ft
+PD40521fu
+PD40521fv
+PD40521fw
+EOT
+
+etc...
+
+[UserData]
+bedfile=KX001_4_filtered_subs.bed
+
+[genome_build]
+genome=human
+build=GRCh37d5
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 6. Save .ini file as 1882_cgpVafConfig.ini and run following command to create amended split commands  
+/lustre/scratch117/casm/team154/em16/KX001/KX001_4/subs/
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# 7. Edit run_bsub.sh command to increase memory and use long queue  
+            run_bsub.sh command sets off jobs in cgpVafChr.cmd file that has been created
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+set -e;
+set -o pipefail;
+
+jobid=`bsub -oo cgpvaf%I.log -q long -J 'batchjobs[1-984]%25' -n 1 -R 'select[mem>=4000] span[hosts=1] rusage[mem=4000]' -M4000 '/software/CGP/projects/cgpVAFcommand/perl/bin/farm_idx_exec.pl cgpVafChr.cmd $LSB_JOBINDEX' |  perl -ane '($id)=$_=~/Job\s+<(\d+)>.*/; print$id'`
+
+bsub -w "done($jobid)||exit($jobid)" -oo concat%I.log -q normal -J 'batchjobs[1-41]%40' -n 1 -R 'select[mem>=1000] span[hosts=1] rusage[mem=1000]' -M1000 '/software/CGP/projects/cgpVAFcommand/perl/bin/farm_idx_exec.pl cgpVafConcat.cmd $LSB_JOBINDEX'
+                                
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 8. Run run_bsub.sh command   
+	/lustre/scratch117/casm/team154/em16/KX001/KX001_4/subs/
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+bash run_bsub.sh
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 9. Check output /lustre/scratch117/casm/team154/em16/KX001/KX001_4/subs/output/output/PDv37is/snp
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+PDv37is_PD40521aa_snp_vaf.tsv	      PDv37is_PD40521ff_snp_vaf.vcf.gz.tbi  PDv37is_PD40521kn_snp_vaf.vcf.gz
+PDv37is_PD40521aa_snp_vaf.vcf	      PDv37is_PD40521fo_snp_vaf.tsv	    PDv37is_PD40521kn_snp_vaf.vcf.gz.tbi
+PDv37is_PD40521aa_snp_vaf.vcf.gz      PDv37is_PD40521fo_snp_vaf.vcf	    PDv37is_PD40521kw_snp_vaf.tsv
+PDv37is_PD40521aa_snp_vaf.vcf.gz.tbi  PDv37is_PD40521fo_snp_vaf.vcf.gz	    PDv37is_PD40521kw_snp_vaf.vcf
+PDv37is_PD40521al_snp_vaf.tsv	      PDv37is_PD40521fo_snp_vaf.vcf.gz.tbi  PDv37is_PD40521kw_snp_vaf.vcf.gz
+PDv37is_PD40521al_snp_vaf.vcf	      PDv37is_PD40521fx_snp_vaf.tsv	    PDv37is_PD40521kw_snp_vaf.vcf.gz.tbi
+PDv37is_PD40521al_snp_vaf.vcf.gz      PDv37is_PD40521fx_snp_vaf.vcf	    PDv37is_PD40521le_snp_vaf.tsv
+PDv37is_PD40521al_snp_vaf.vcf.gz.tbi  PDv37is_PD40521fx_snp_vaf.vcf.gz	    PDv37is_PD40521le_snp_vaf.vcf
+PDv37is_PD40521av_snp_vaf.tsv	      PDv37is_PD40521fx_snp_vaf.vcf.gz.tbi  PDv37is_PD40521le_snp_vaf.vcf.gz
+PDv37is_PD40521av_snp_vaf.vcf	      PDv37is_PD40521gg_snp_vaf.tsv	    PDv37is_PD40521le_snp_vaf.vcf.gz.tbi
+PDv37is_PD40521av_snp_vaf.vcf.gz      PDv37is_PD40521gg_snp_vaf.vcf	    PDv37is_PD40521ln_snp_vaf.tsv
+PDv37is_PD40521av_snp_vaf.vcf.gz.tbi  PDv37is_PD40521gg_snp_vaf.vcf.gz	    PDv37is_PD40521ln_snp_vaf.vcf
+PDv37is_PD40521bj_snp_vaf.tsv	      PDv37is_PD40521gg_snp_vaf.vcf.gz.tbi  PDv37is_PD40521ln_snp_vaf.vcf.gz
+PDv37is_PD40521bj_snp_vaf.vcf	      PDv37is_PD40521gp_snp_vaf.tsv	    PDv37is_PD40521ln_snp_vaf.vcf.gz.tbi
+PDv37is_PD40521bj_snp_vaf.vcf.gz      PDv37is_PD40521gp_snp_vaf.vcf	    PDv37is_PD40521lw_snp_vaf.tsv
+PDv37is_PD40521bj_snp_vaf.vcf.gz.tbi  PDv37is_PD40521gp_snp_vaf.vcf.gz	    PDv37is_PD40521lw_snp_vaf.vcf
+PDv37is_PD40521bs_snp_vaf.tsv	      PDv37is_PD40521gp_snp_vaf.vcf.gz.tbi  PDv37is_PD40521lw_snp_vaf.vcf.gz
+PDv37is_PD40521bs_snp_vaf.vcf	      PDv37is_PD40521gz_snp_vaf.tsv	    PDv37is_PD40521lw_snp_vaf.vcf.gz.tbi
+PDv37is_PD40521bs_snp_vaf.vcf.gz      PDv37is_PD40521gz_snp_vaf.vcf	    PDv37is_PD40521mf_snp_vaf.tsv
+PDv37is_PD40521bs_snp_vaf.vcf.gz.tbi  PDv37is_PD40521gz_snp_vaf.vcf.gz	    PDv37is_PD40521mf_snp_vaf.vcf
+PDv37is_PD40521cb_snp_vaf.tsv	      PDv37is_PD40521gz_snp_vaf.vcf.gz.tbi  PDv37is_PD40521mf_snp_vaf.vcf.gz
+PDv37is_PD40521cb_snp_vaf.vcf	      PDv37is_PD40521hh_snp_vaf.tsv	    PDv37is_PD40521mf_snp_vaf.vcf.gz.tbi
+PDv37is_PD40521cb_snp_vaf.vcf.gz      PDv37is_PD40521hh_snp_vaf.vcf	    PDv37is_PD40521mo_snp_vaf.tsv
+PDv37is_PD40521cb_snp_vaf.vcf.gz.tbi  PDv37is_PD40521hh_snp_vaf.vcf.gz	    PDv37is_PD40521mo_snp_vaf.vcf
+PDv37is_PD40521ck_snp_vaf.tsv	      PDv37is_PD40521hh_snp_vaf.vcf.gz.tbi  PDv37is_PD40521mo_snp_vaf.vcf.gz
+PDv37is_PD40521ck_snp_vaf.vcf	      PDv37is_PD40521hq_snp_vaf.tsv	    PDv37is_PD40521mo_snp_vaf.vcf.gz.tbi
+PDv37is_PD40521ck_snp_vaf.vcf.gz      PDv37is_PD40521hq_snp_vaf.vcf	    PDv37is_PD40521nh_snp_vaf.tsv
+PDv37is_PD40521ck_snp_vaf.vcf.gz.tbi  PDv37is_PD40521hq_snp_vaf.vcf.gz	    PDv37is_PD40521nh_snp_vaf.vcf
+PDv37is_PD40521ct_snp_vaf.tsv	      PDv37is_PD40521hq_snp_vaf.vcf.gz.tbi  PDv37is_PD40521nh_snp_vaf.vcf.gz
+PDv37is_PD40521ct_snp_vaf.vcf	      PDv37is_PD40521ia_snp_vaf.tsv	    PDv37is_PD40521nh_snp_vaf.vcf.gz.tbi
+PDv37is_PD40521ct_snp_vaf.vcf.gz      PDv37is_PD40521ia_snp_vaf.vcf	    PDv37is_PD40521nq_snp_vaf.tsv
+PDv37is_PD40521ct_snp_vaf.vcf.gz.tbi  PDv37is_PD40521ia_snp_vaf.vcf.gz	    PDv37is_PD40521nq_snp_vaf.vcf
+PDv37is_PD40521dc_snp_vaf.tsv	      PDv37is_PD40521ia_snp_vaf.vcf.gz.tbi  PDv37is_PD40521nq_snp_vaf.vcf.gz
+PDv37is_PD40521dc_snp_vaf.vcf	      PDv37is_PD40521ij_snp_vaf.tsv	    PDv37is_PD40521nq_snp_vaf.vcf.gz.tbi
+PDv37is_PD40521dc_snp_vaf.vcf.gz      PDv37is_PD40521ij_snp_vaf.vcf	    PDv37is_PD40521n_snp_vaf.tsv
+PDv37is_PD40521dc_snp_vaf.vcf.gz.tbi  PDv37is_PD40521ij_snp_vaf.vcf.gz	    PDv37is_PD40521n_snp_vaf.vcf
+PDv37is_PD40521dl_snp_vaf.tsv	      PDv37is_PD40521ij_snp_vaf.vcf.gz.tbi  PDv37is_PD40521n_snp_vaf.vcf.gz
+PDv37is_PD40521dl_snp_vaf.vcf	      PDv37is_PD40521is_snp_vaf.tsv	    PDv37is_PD40521n_snp_vaf.vcf.gz.tbi
+PDv37is_PD40521dl_snp_vaf.vcf.gz      PDv37is_PD40521is_snp_vaf.vcf	    PDv37is_PD40521nz_snp_vaf.tsv
+PDv37is_PD40521dl_snp_vaf.vcf.gz.tbi  PDv37is_PD40521is_snp_vaf.vcf.gz	    PDv37is_PD40521nz_snp_vaf.vcf
+PDv37is_PD40521du_snp_vaf.tsv	      PDv37is_PD40521is_snp_vaf.vcf.gz.tbi  PDv37is_PD40521nz_snp_vaf.vcf.gz
+PDv37is_PD40521du_snp_vaf.vcf	      PDv37is_PD40521jl_snp_vaf.tsv	    PDv37is_PD40521nz_snp_vaf.vcf.gz.tbi
+PDv37is_PD40521du_snp_vaf.vcf.gz      PDv37is_PD40521jl_snp_vaf.vcf	    PDv37is_PD40521q_snp_vaf.tsv
+PDv37is_PD40521du_snp_vaf.vcf.gz.tbi  PDv37is_PD40521jl_snp_vaf.vcf.gz	    PDv37is_PD40521q_snp_vaf.vcf
+PDv37is_PD40521ed_snp_vaf.tsv	      PDv37is_PD40521jl_snp_vaf.vcf.gz.tbi  PDv37is_PD40521q_snp_vaf.vcf.gz
+PDv37is_PD40521ed_snp_vaf.vcf	      PDv37is_PD40521ju_snp_vaf.tsv	    PDv37is_PD40521q_snp_vaf.vcf.gz.tbi
+PDv37is_PD40521ed_snp_vaf.vcf.gz      PDv37is_PD40521ju_snp_vaf.vcf	    PDv37is_PD40521ww_snp_vaf.tsv
+PDv37is_PD40521ed_snp_vaf.vcf.gz.tbi  PDv37is_PD40521ju_snp_vaf.vcf.gz	    PDv37is_PD40521ww_snp_vaf.vcf
+PDv37is_PD40521em_snp_vaf.tsv	      PDv37is_PD40521ju_snp_vaf.vcf.gz.tbi  PDv37is_PD40521ww_snp_vaf.vcf.gz
+PDv37is_PD40521em_snp_vaf.vcf	      PDv37is_PD40521ke_snp_vaf.tsv	    PDv37is_PD40521ww_snp_vaf.vcf.gz.tbi
+PDv37is_PD40521em_snp_vaf.vcf.gz      PDv37is_PD40521ke_snp_vaf.vcf	    PDv37is_PD40521xk_snp_vaf.tsv
+PDv37is_PD40521em_snp_vaf.vcf.gz.tbi  PDv37is_PD40521ke_snp_vaf.vcf.gz	    PDv37is_PD40521xk_snp_vaf.vcf
+PDv37is_PD40521ff_snp_vaf.tsv	      PDv37is_PD40521ke_snp_vaf.vcf.gz.tbi  PDv37is_PD40521xk_snp_vaf.vcf.gz
+PDv37is_PD40521ff_snp_vaf.vcf	      PDv37is_PD40521kn_snp_vaf.tsv	    PDv37is_PD40521xk_snp_vaf.vcf.gz.tbi
+PDv37is_PD40521ff_snp_vaf.vcf.gz      PDv37is_PD40521kn_snp_vaf.vcf
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 10.  Check vaf.tsv output files 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+wc -l *_vaf.tsv
+
+    245735 PDv37is_PD40521aa_snp_vaf.tsv
+    245735 PDv37is_PD40521al_snp_vaf.tsv
+    245735 PDv37is_PD40521av_snp_vaf.tsv
+    245735 PDv37is_PD40521bj_snp_vaf.tsv
+    245735 PDv37is_PD40521bs_snp_vaf.tsv
+    245735 PDv37is_PD40521cb_snp_vaf.tsv
+    245735 PDv37is_PD40521ck_snp_vaf.tsv
+    245735 PDv37is_PD40521ct_snp_vaf.tsv
+    245732 PDv37is_PD40521dc_snp_vaf.tsv
+    245735 PDv37is_PD40521dl_snp_vaf.tsv
+    245735 PDv37is_PD40521du_snp_vaf.tsv
+    245735 PDv37is_PD40521ed_snp_vaf.tsv
+    245735 PDv37is_PD40521em_snp_vaf.tsv
+    245735 PDv37is_PD40521ff_snp_vaf.tsv
+    245735 PDv37is_PD40521fo_snp_vaf.tsv
+    245735 PDv37is_PD40521fx_snp_vaf.tsv
+    245735 PDv37is_PD40521gg_snp_vaf.tsv
+    245735 PDv37is_PD40521gp_snp_vaf.tsv
+    245735 PDv37is_PD40521gz_snp_vaf.tsv
+    245735 PDv37is_PD40521hh_snp_vaf.tsv
+    245736 PDv37is_PD40521hq_snp_vaf.tsv
+    245735 PDv37is_PD40521ia_snp_vaf.tsv
+    245735 PDv37is_PD40521ij_snp_vaf.tsv
+    245735 PDv37is_PD40521is_snp_vaf.tsv
+    245735 PDv37is_PD40521jl_snp_vaf.tsv
+    245735 PDv37is_PD40521ju_snp_vaf.tsv
+    245735 PDv37is_PD40521ke_snp_vaf.tsv
+    245735 PDv37is_PD40521kn_snp_vaf.tsv
+    245735 PDv37is_PD40521kw_snp_vaf.tsv
+    245735 PDv37is_PD40521le_snp_vaf.tsv
+    245735 PDv37is_PD40521ln_snp_vaf.tsv
+    245735 PDv37is_PD40521lw_snp_vaf.tsv
+    245735 PDv37is_PD40521mf_snp_vaf.tsv
+    245735 PDv37is_PD40521mo_snp_vaf.tsv
+    245735 PDv37is_PD40521nh_snp_vaf.tsv
+    245735 PDv37is_PD40521nq_snp_vaf.tsv
+    245735 PDv37is_PD40521n_snp_vaf.tsv
+    245735 PDv37is_PD40521nz_snp_vaf.tsv
+    245735 PDv37is_PD40521q_snp_vaf.tsv
+    245735 PDv37is_PD40521ww_snp_vaf.tsv
+    245735 PDv37is_PD40521xk_snp_vaf.tsv
+  10075133 total
+
+ls *_vaf.tsv > files
+
+for i in {1..41}
+do grep -v "##" $(sed -n $i'p' files) > tsv$i
+done
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 11. Cut columns of interest to new files: Chrom Pos Ref Alt then MTR DEP for all samplesq 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Create list of files of interest in list saved as 'tsv_files'
+ls tsv* > tsv_files
+
+#for first file
+cut -f 3,4,5,6,39,41,54,56,69,71,84,86,99,101,114,116,129,131,144,146,159,161,174,176 $(sed -n '1p' tsv_files) > output1   #Chr, Pos, Ref, Alt, + MTR, DEP for all samples (max 11 samples in one file)
+
+#for subsequent files (exclude Chr, Pos, Ref, Alt and PDv37is)
+for i in {2..41}
+do
+cut -f 39,41,54,56,69,71,84,86,99,101,114,116,129,131,144,146,159,161,174,176,189,191,204,206 $(sed -n $i'p' tsv_files) >  output$i
+done
+
+#Concatenate output files to one merged file
+
+paste output* > KX001_4_filtered_merged_cut.tsv
+
+# 245677 KX001_4_filtered_merged_cut.tsv
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#Filtering step 1 
+
+/lustre/scratch117/casm/team154/em16/KX001/KX001_4/subs/filtering
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Scripts saved in /lustre/scratch117/casm/team154/em16/R_scripts
+# R version 3.4.0
+
+mkdir output
+
+export PATH=/software/R-3.6.1/bin:${PATH}
+export R_HOME=$(R RHOME)
+export R_LIBS_USER="/nfs/users/nfs_e/em16/R/x86_64-pc-linux-gnu-library/3.6"
+
+bsub -o $PWD/log.%J -e $PWD/err.%J -q long -R 'select[mem>=16000] span[hosts=1] rusage[mem=16000]' -M16000 -n6 -J KX001_4 /lustre/scratch117/casm/team154/em16/R_scripts/mutation_filtering_get_parameters.R -r KX001_4_01 -s /lustre/scratch117/casm/team154/em16/KX001/KX001_4/subs/output/output/PDv37is/snp/KX001_4_filtered_merged_cut.tsv -i /lustre/scratch117/casm/team154/em16/KX001/KX001_4/indels/output/output/PDv37is/indel/KX001_4_indel_filtered_merged_cut.tsv -o /lustre/scratch117/casm/team154/em16/KX001/KX001_4/subs/filtering/output
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Filtering step 2 
+
+/lustre/scratch117/casm/team154/em16/KX001/KX001_4/trees_vaf/
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Ensure trees folder exists and copy mats_and_params file there
+# create KX001_4_filtering_from_table_tree_f5.R script in trees folder
+# run bsub command
+
+module load vagrent
+export PATH=/software/R-3.6.1/bin:${PATH}
+export R_HOME=$(R RHOME)
+export R_LIBS_USER="/nfs/users/nfs_e/em16/R/x86_64-pc-linux-gnu-library/3.6"
+
+RUNID='KX001_4'
+OUTPUT='/lustre/scratch117/casm/team154/em16/KX001/KX001_4/trees_vaf/'
+MEM=30000
+QUEUE=yesterday
+CORES=1
+
+bsub -J"${RUNID}" -M${MEM} -R"select[mem>${MEM}] rusage[mem=${MEM}] span[hosts=1]" -n ${CORES} -q ${QUEUE} -e %J.stderr -o %J.stdout \
+"xvfb-run -a Rscript --no-save --no-restore --verbose ./KX001_4_filtering_from_table_tree_f5.R ${RUNID} ${OUTPUT} > KX001_4_filtering_from_table_tree_f5.Rout 2>&1"
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Filtering step 2 - rerun including ancestral branch when assigning mutations to branches
+
+/lustre/scratch117/casm/team154/em16/KX001/KX001_4/trees_vaf_anc/
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Ensure trees folder exists and copy mats_and_params file there
+# create KX001_4_filtering_from_table_tree_anc_f5.R script in trees folder
+# run bsub command
+
+module load vagrent
+export PATH=/software/R-3.6.1/bin:${PATH}
+export R_HOME=$(R RHOME)
+export R_LIBS_USER="/nfs/users/nfs_e/em16/R/x86_64-pc-linux-gnu-library/3.6"
+
+RUNID='KX001_4'
+OUTPUT='/lustre/scratch117/casm/team154/em16/KX001/KX001_4/trees_vaf_anc/'
+MEM=30000
+QUEUE=yesterday
+CORES=1
+
+bsub -J"${RUNID}" -M${MEM} -R"select[mem>${MEM}] rusage[mem=${MEM}] span[hosts=1]" -n ${CORES} -q ${QUEUE} -e %J.stderr -o %J.stdout \
+"xvfb-run -a Rscript --no-save --no-restore --verbose ./KX001_4_filtering_from_table_tree_anc_f5.R ${RUNID} ${OUTPUT} > KX001_4_filtering_from_table_tree_anc_f5.Rout 2>&1"
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#Mike filtering - filter 2  Re-run with samples failing QC removed and with depth cut off 7X
+
+/lustre/scratch117/casm/team154/em16/KX001/KX001_4/trees_vaf_cut/
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# Ensure trees folder exists and copy mats_and_params file there
+# create KX001_4_filtering_from_table_tree_no_dup_f5.R script in trees folder
+# run bsub command
+
+module load vagrent
+export PATH=/software/R-3.6.1/bin:${PATH}
+export R_HOME=$(R RHOME)
+export R_LIBS_USER="/nfs/users/nfs_e/em16/R/x86_64-pc-linux-gnu-library/3.6"
+
+RUNID='KX001_4'
+OUTPUT='/lustre/scratch117/casm/team154/em16/KX001/KX001_4/trees_vaf_cut/'
+MEM=30000
+QUEUE=long
+CORES=1
+
+bsub -J"${RUNID}" -M${MEM} -R"select[mem>${MEM}] rusage[mem=${MEM}] span[hosts=1]" -n ${CORES} -q ${QUEUE} -e %J.stderr -o %J.stdout \
+"xvfb-run -a Rscript --no-save --no-restore --verbose ./KX001_4_filtering_from_table_tree_no_dup_f5.R ${RUNID} ${OUTPUT} > KX001_4_filtering_from_table_tree_no_dup_f5.Rout 2>&1"
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Sensitivity analysis 
+/lustre/scratch117/casm/team154/em16/KX001/KX001_4/sensitivity/
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/lustre/scratch117/casm/team154/em16/R_scripts/Sensitivity_analysis_from_SNPs.R -m /lustre/scratch117/casm/team154/em16/KX001/KX001_4/trees/mats_and_params_KX001_4_01 -o /lustre/scratch117/casm/team154/em16/KX001/KX001_4/sensitivity/ -n KX001_4_sensitivity -i /lustre/scratch117/casm/team154/em16/KX001/KX001_4/indels -s /lustre/scratch117/casm/team154/em16/KX001/KX001_4/subs
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+

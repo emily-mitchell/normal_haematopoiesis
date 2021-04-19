@@ -1,0 +1,146 @@
+---
+title: "Subs analysis"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Open libraries
+```{r}
+library(GenomicRanges)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(BiocGenerics)
+library(knitr)
+library(stringr)
+library(ggtree)
+library(ape)
+library(seqinr)
+library(data.table)
+library(phytools)
+```
+
+1. Set working directory and define files and paths
+```{r}
+ID = "KX001" #Edit
+Iteration = "KX001_4" #Edit
+Run_ID = "KX001_4_01" #Edit
+filtering_ID = "standard_rho01" #Edit
+setwd = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/subs/vaf/")
+mats_and_param_file = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/output/mats_and_params_", Run_ID)
+file_annot = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf/output/annotated_mut_set_",Run_ID,"_",filtering_ID)
+tree_file_path = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf/output/tree_", Run_ID,"_",filtering_ID, ".tree")
+```
+
+```{r}
+load(file_annot)
+load(mats_and_param_file)
+tree <- read.tree(tree_file_path)
+```
+
+
+Assessing SNV burden per colony
+```{r}
+SNVs_per_sample = colSums(filtered_muts$COMB_mats.tree.build$Genotype_bin[filtered_muts$COMB_mats.tree.build$mat$Mut_type == "SNV",] == 1)
+mean(SNVs_per_sample); sd(SNVs_per_sample); range(SNVs_per_sample)
+
+
+Mutation_burden <- as.data.frame(colSums(filtered_muts$COMB_mats.tree.build$Genotype_bin[filtered_muts$COMB_mats.tree.build$mat$Mut_type == "SNV",] == 1))
+Mutation_burden$Mean_depth <- (colSums(filtered_muts$COMB_mats.tree.build$NR)/nrow(filtered_muts$COMB_mats.tree.build$NR))
+colnames(Mutation_burden)[1] <- "Number_mutations"
+Mutation_burden$Sample <- rownames(Mutation_burden)
+Summary_snvs <- as.data.frame(cbind(Mutation_burden[,c(3,1,2)]))
+
+write.table(Summary_snvs, paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/subs/vaf/mutation_burden/",Iteration,"_sub_dep.txt"), sep="\t", col.names = T, row.names = F, quote=F)
+
+
+```
+
+Assessing Indel burden per colony
+```{r}
+INDELs_per_sample = colSums(filtered_muts$COMB_mats.tree.build$Genotype_bin[filtered_muts$COMB_mats.tree.build$mat$Mut_type == "INDEL",] == 1)
+mean(INDELs_per_sample); sd(INDELs_per_sample); range(INDELs_per_sample)
+
+
+Indel_burden <- as.data.frame(colSums(filtered_muts$COMB_mats.tree.build$Genotype_bin[filtered_muts$COMB_mats.tree.build$mat$Mut_type == "INDEL",] == 1))
+Indel_burden$Mean_depth <- (colSums(filtered_muts$COMB_mats.tree.build$NR)/nrow(filtered_muts$COMB_mats.tree.build$NR))
+colnames(Indel_burden)[1] <- "Number_indels"
+Indel_burden$Sample <- rownames(Indel_burden)
+Summary_indels <- as.data.frame(cbind(Indel_burden[,c(3,1,2)]))
+
+write.table(Summary_indels, paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/subs/vaf/mutation_burden/",Iteration, "_indel_dep.txt"), sep="\t", col.names = T, row.names = F, quote=F)
+```
+
+
+
+
+
+Graph of VAF distribution per sample (unfiltered)
+```{r}
+xmtrs <- filtered_muts$COMB_mats.tree.build$NV
+xdeps <- filtered_muts$COMB_mats.tree.build$NR
+xvafs <- xmtrs/xdeps
+
+#Create list of samples to loop through
+
+samples <- colnames(xvafs)
+
+for (sample in samples[1:ncol(xvafs)]) {
+  raw_vafs <- xvafs[,sample]
+  pos_vafs <- raw_vafs[raw_vafs>0 & !is.na(raw_vafs)]
+  
+  pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/subs/vaf/vaf_plots/",sample, "_VAF_dist_somatic.pdf"))
+  hist(pos_vafs, main = paste0(sample, " histogram of somatic variants"), breaks =20)  
+ dev.off()
+ 
+}
+
+
+```
+
+'Get ancestral nodes' function
+```{r}
+get_ancestral_nodes= function(node,edge,exclude_root=TRUE){
+    idx=which(edge[,2]==node)
+    parents=node ##Include the node
+    while(length(idx)>0){
+        if(length(idx)>1){
+            stop("multiple parents!")
+        }
+        parent=edge[idx,1]
+        parents=c(parents,parent)
+        #This finds the parent of the current parent - thus navigating up to the root.
+        idx=which(edge[,2]==parent)
+    }
+    if(exclude_root){
+        parents[-length(parents)] ##The last node is the root.
+    }else{
+        parents
+    }
+}
+```
+
+Histogram of VAFs for filtered variants
+```{r}
+vaf_density_plot_final=function(sample,tree,COMB_mats){
+  node <- which(tree$tip.label==sample)
+  sample_muts <- COMB_mats$mat$mut_ref[COMB_mats$mat$node %in% get_ancestral_nodes(node,tree$edge)]
+  COMB_mats$NR[COMB_mats$NR == 0] <- 1
+  dens <- density((COMB_mats$NV/COMB_mats$NR)[sample_muts,sample])
+  plot(dens,xlim = c(0,1),main=sample)
+  abline(v = dens$x[which.max(dens$y)])
+  text(0.7, max(dens$y) - 0.2, paste("Peak VAF dens=",round(dens$x[which.max(dens$y)], digits = 2)),col="red",cex = 0.7)
+} 
+ 
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/subs/vaf/vaf_plots/sample_vaf_plots.pdf"))
+sapply(tree$tip.label, #a list of all the sample names – I get this from the tree tip labels
+vaf_density_plot_final, #the function above
+tree=tree, #the tree object
+COMB_mats = filtered_muts$COMB_mats.tree.build)  #This is from the file_annot output which includes node numbers for each mutation
+dev.off()
+```

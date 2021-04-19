@@ -1,0 +1,42 @@
+---
+title: "Phylofit summary plots"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(gplots)
+```
+
+
+Set file paths and working directory
+```{r}
+#PDID ="PD45534"
+ID = "KX003" #Edit
+Iteration = "KX003_5" #Edit
+Run_ID = "KX003_5_01" #Edit
+setwd = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/phylofit/") 
+```
+
+Read in table of selection coefficients
+```{r}
+sel <- read.csv(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/phylofit/clade_size5/res_with_acf_target.txt"), stringsAsFactors = F, header = T, sep = "\t")
+```
+
+Plot
+```{r}
+
+ggplot(sel) +
+theme_classic()+
+  geom_bar(aes(reorder(variant_ID, S), S), stat="identity", fill = "skyblue", alpha = 0.7)+
+  geom_errorbar(aes(x= variant_ID, ymin= S_lb, ymax= S_ub), width = 0.4, colour = "orange", size = 1.0)+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  ylim(0,0.5)+
+  labs(title = "81 year male", y = "S (Selection Coefficient)", x = "Driver ID")
+
+```
+

@@ -1,0 +1,691 @@
+---
+title: "Tree_analysis"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.width=40, fig.height=15, warning=FALSE)
+```
+
+Open packages
+```{r}
+suppressMessages(library(stringr))
+suppressMessages(library(ggtree))
+suppressMessages(library(ape))
+suppressMessages(library(seqinr))
+suppressMessages(library(data.table))
+suppressMessages(library(phytools))
+suppressMessages(library(devtools))
+suppressMessages(library(MCMCglmm))
+suppressMessages(library(phangorn))
+suppressMessages(library(spam))
+suppressMessages(library(INLA))
+suppressMessages(library(phylodyn))
+suppressMessages(library(ggplot2))
+```
+
+Set file paths and working directory
+```{r}
+PDID ="PD43974"
+ID = "KX003" #Edit
+Iteration = "KX003_5" #Edit
+Run_ID = "KX003_5_01" #Edit
+filtering_ID = "standard_rho01" #Edit
+mutlim = 2000 #Edit
+age = 81 #Edit
+age_breaks = c(0,10,20,30,40,50,60,70,80,90) #Edit
+mut_breaks = c(0,200,400,600,800,1000,1200,1400,1600,1800,2000) #Edit
+setwd = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/") 
+mats_and_param_file = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/output/mats_and_params_", Run_ID)
+tree_file_path = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/output/tree_", Run_ID,"_",filtering_ID, ".tree")
+file_annot = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/output/annotated_mut_set_", Run_ID,"_",filtering_ID)
+sensitivity_df = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/output/",Iteration,"_sensitivity")
+XY_cn = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/ascat/XY_cn/",ID,"_meanCoverageXY.tsv")
+CN_file = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/ascat/",Iteration,"_ascat_summary.csv")
+SV_file = "~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/gridss/gridss_all_cut.csv"
+mut_burden = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/subs/vaf_cut/mutation_burden/",Iteration,"_sub_dep_adj.txt")
+sample_type_file = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/driver_info/",Iteration,"_sample_type.csv")
+final_gene_file = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/driver_info/",Iteration,"_driver_genes_final.csv")
+mp_boot_file = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/output/Filter_", Run_ID,"_",filtering_ID, ".fa.treefile")
+```
+
+Source all 'local directory' functions
+```{r}
+function_files=list.files('~/Documents/Bioinformatics/CGP/Functions/', full.names = TRUE, pattern = ".R")
+suppressMessages(sapply(function_files, source))
+```
+
+Import PB HSC information
+```{r}
+PB_HSCs = read.table(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/Info/",ID,"_PB_samples.txt"), stringsAsFactors = FALSE, header = FALSE)
+PB_HSCs = PB_HSCs$V1
+```
+
+Import myeloid malignancy gene list
+```{r}
+chip_drivers = read.csv("~/Documents/Bioinformatics/CGP/Filtering/chip_drivers.csv", stringsAsFactors = FALSE, header = FALSE)
+chip_drivers <- chip_drivers$V1
+```
+
+Import top clonal haem gene list
+```{r}
+top_genes = read.csv("~/Documents/Bioinformatics/CGP/Filtering/final_gene_list.csv", stringsAsFactors = FALSE, header = FALSE)
+top_genes <- top_genes$V1
+```
+
+
+Import cancer census gene list
+```{r}
+cancer_drivers = read.table("~/Documents/Bioinformatics/CGP/Filtering/cancer_census.csv", stringsAsFactors = FALSE, header = TRUE, sep = ",")
+cancer_drivers <- cancer_drivers$Gene.Symbol
+```
+
+
+Import dnds lists
+```{r}
+dnds_genes_1500 = read.csv("~/Documents/Bioinformatics/CGP/Filtering/dnds_genes_1500.csv", stringsAsFactors = FALSE, header = FALSE)
+dnds_genes_1500 <- dnds_genes_1500$V1
+```
+
+Load files
+```{r}
+load(mats_and_param_file)
+load(file_annot)
+tree <- read.tree(tree_file_path)
+mpboot_tree <- read.tree(mp_boot_file)
+sensitivity <- read.table(sensitivity_df,stringsAsFactors = FALSE, header = TRUE)
+XY <- read.table(XY_cn,stringsAsFactors = FALSE, header = TRUE)
+CN <- read.csv(CN_file, stringsAsFactors = FALSE, header = TRUE)
+SV <- read.csv(SV_file,stringsAsFactors = FALSE, header = TRUE)
+sample_type <- read.csv(sample_type_file,stringsAsFactors = FALSE, header = TRUE)
+muts <- read.table(mut_burden,stringsAsFactors = FALSE, header = TRUE)
+```
+
+Calculate mean muts
+```{r}
+meanmut = mean(muts$Number_mutations_adj_as)
+```
+
+
+Re-label the key objects for the plot_tree functions
+```{r}
+details <- filtered_muts$COMB_mats.tree.build$mat
+details$Type <- as.character(details$Type)
+details$Gene <- as.character(details$Gene)
+details$variant_ID <- paste(details$Gene, details$Protein, sep = " ")
+details$Type[details$Type == ""] <- "no_annotation"
+mtr <- filtered_muts$COMB_mats.tree.build$NV
+dep <- filtered_muts$COMB_mats.tree.build$NR
+```
+
+Plot mpboot tree with no labels
+```{r}
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_mpboot.pdf"),width=4,height=12)
+ggtree(mpboot_tree, size = 0.15) + #geom_tiplab(size=1.5)+
+  theme_tree2()
+dev.off()
+```
+
+
+Plot tree with labels
+```{r}
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_labels.pdf"),width=4,height=12)
+ggtree(tree, size = 0.15) + geom_tiplab(size=0.8)+
+  theme_tree2()+xlim(0,mutlim)
+dev.off()
+```
+
+Plot tree no labels
+```{r}
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,".pdf"),width=4,height=12)
+ggtree(tree, size = 0.15) + #geom_tiplab(size=1.5)+
+  theme_tree2()+xlim(0,mutlim)
+dev.off()
+```
+
+
+Plot tree with nodes
+```{r}
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_labels_nodes.pdf"),width=4,height=12)
+ggtree(tree, size = 0.15) + #geom_tiplab(size=0.8)+
+  theme_tree2()+xlim(0,mutlim)+
+  geom_text(aes(label=node), size = 0.75, hjust = -0.3)+
+  geom_rootpoint(size = 0.5)
+dev.off()
+```
+
+Make and save coverage corrected tree
+```{r}
+tree_adj <- get_corrected_tree(tree, details, sensitivity, include_SNVs = TRUE, include_indels = FALSE, get_edge_from_tree = FALSE)
+
+write.tree(tree_adj, paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_files/",Iteration,"_adj.tree"))
+```
+
+Plot corrected tree with labels
+```{r}
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_labels_corrected.pdf"),width=4,height=12)
+ggtree(tree_adj, size = 0.15) + geom_tiplab(size=0.8)+
+  theme_tree2()+xlim(0,mutlim)
+dev.off()
+```
+
+Plot corrected tree no labels
+```{r}
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_corrected.pdf"),width=4,height=12)
+ggtree(tree_adj, size = 0.15) + #geom_tiplab(size=1.5)+
+  theme_tree2()+xlim(0,mutlim)
+dev.off()
+```
+
+Make and save tree ultrametric (use corrected tree)
+```{r}
+tree_ultra <- make.ultrametric.tree(tree_adj)
+write.tree(tree_ultra, paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_files/",Iteration,"_ultra.tree"))
+```
+
+Ultrametric tree with age as x axis
+```{r}
+tree_ultra_age <- tree_ultra
+tree_ultra_age$edge.length <- tree_ultra_age$edge.length*age
+```
+
+Plot ultrametric tree with age as x axis
+```{r}
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_labels_ultra_age.pdf"),width=4,height=12)
+ggtree(tree_ultra_age, size = 0.15) + #geom_tiplab(size=0.8)+
+  theme_tree2()+xlim(0,age+1)+scale_x_continuous(breaks= age_breaks)
+dev.off()
+```
+
+Ultrametric tree with muts as x axis
+```{r}
+tree_ultra_mut <- tree_ultra
+tree_ultra_mut$edge.length <- tree_ultra_mut$edge.length*meanmut
+```
+
+Plot ultrametric tree with muts as x axis
+```{r}
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_labels_ultra_mut.pdf"),width=4,height=12)
+ggtree(tree_ultra_mut, size = 0.15) + #geom_tiplab(size=0.8)+
+  theme_tree2()+xlim(0,meanmut+5)+scale_x_continuous(breaks= mut_breaks)
+dev.off()
+```
+
+Plot tree with nodes
+```{r}
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_labels_nodes.pdf"),width=4,height=12)
+ggtree(tree_ultra_mut, size = 0.15) + #geom_tiplab(size=0.8)+
+  theme_tree2()+xlim(0,age+1)+scale_x_continuous(breaks= mut_breaks)+
+  geom_text(aes(label=node), size = 0.75, hjust = -0.3)+
+  geom_rootpoint(size = 0.5)
+dev.off()
+```
+
+Run phylodyn
+```{r, fig.width=9, fig.height=8}
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_phylodyn.pdf"),width=9,height=8)
+tree.BNPR.bespoke <- BNPR(tree_ultra_age)
+plot_BNPR(tree.BNPR.bespoke)
+dev.off()
+```
+
+Annotate details matrix
+```{r}
+details$protein_coding_mutation <- ifelse(details$Type %in% c("protein_coding:exon:CDS:substitution:codon_variant:non_synonymous_codon",
+
+"protein_coding:exon:CDS:insertion:frameshift_variant",
+                                                  "protein_coding:exon:CDS:substitution:codon_variant:stop_gained",
+                                                  "protein_coding:exon:CDS:substitution:codon_variant:initiator_codon_change",
+                                                  
+"protein_coding:exon:CDS:deletion:frameshift_variant",
+                                                  "protein_coding:exon:CDS:deletion:inframe_variant:inframe_codon_loss"),
+                              "Protein coding mutation", "no")
+details$splice_variant <- ifelse(grepl(pattern = "splice", x = details$Type),
+                              "Splice variant", "no")
+details$exon_UTR <- ifelse(grepl(pattern = "UTR", x = details$Type) & grepl(pattern = "exon", x = details$Type),
+                                 "UTR exon", "no")
+details$intron_UTR <- ifelse(grepl(pattern = "UTR", x = details$Type) & grepl(pattern = "intron", x = details$Type),
+                           "UTR intron", "no")
+
+details$protein_coding_chip_variant = ifelse(details$Gene %in% chip_drivers & details$protein_coding_mutation == "Protein coding mutation",
+                                  "Protein coding variant in driver gene", "no")
+details$dnds_variant_1500 = ifelse(details$Gene %in% dnds_genes_1500 & details$protein_coding_mutation == "Protein coding mutation",
+                                  "Dnds gene", "no")
+
+details$cancer_drivers = ifelse(details$Gene %in% cancer_drivers & details$protein_coding_mutation == "Protein coding mutation",
+                                  "Cancer gene", "no")
+
+details$top_genes = ifelse(details$Gene %in% top_genes & details$protein_coding_mutation == "Protein coding mutation",
+                                  "Top gene", "no")
+
+
+details$protein_coding_chip_variant_splice = ifelse(details$Gene %in% chip_drivers & details$splice_variant == "Splice variant",
+                                  "Protein coding variant in driver gene", "no")
+
+details$dnds_variant_1500_splice = ifelse(details$Gene %in% dnds_genes_1500 & details$splice_variant == "Splice variant",
+                                  "Dnds gene", "no")
+
+details$cancer_drivers_splice = ifelse(details$Gene %in% cancer_drivers & details$splice_variant == "Splice variant",
+                                  "Cancer gene", "no")
+
+
+
+
+
+details$top_genes_splice = ifelse(details$Gene %in% top_genes & details$splice_variant == "Splice variant",
+                                  "Top gene", "no")
+
+details$expanded_cancer_drivers = ifelse(details$Gene %in% cancer_drivers & details$protein_coding_mutation == "Protein coding mutation" & details$node > length(tree$tip.label),
+                                  "Expanded cancer gene", "no")
+
+
+```
+
+Save table of coding mutations in driver genes
+```{r}
+driver <- details[details$protein_coding_chip_variant == "Protein coding variant in driver gene" | details$protein_coding_chip_variant_splice == "Protein coding variant in driver gene",]
+driver <- driver[,1:15]
+driver$Donor <- ID
+write.csv(driver, paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/driver_info/",Iteration,"_driver_genes.csv"),row.names = FALSE)
+```
+
+Save table of coding mutations in cancer genes
+```{r}
+cancer <- details[details$cancer_drivers == "Cancer gene" | details$cancer_drivers_splice == "Cancer gene",]
+cancer <- cancer[,1:15]
+cancer$Donor <- ID
+write.csv(cancer, paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/driver_info/",Iteration,"_cancer_genes.csv"),row.names = FALSE)
+```
+
+Save table of coding mutations in top genes
+```{r}
+top <- details[details$top_genes == "Top gene" | details$top_genes_splice == "Top gene",]
+top <- top[,1:15]
+top$Donor <- ID
+write.csv(top, paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/driver_info/",Iteration,"_top_genes.csv"), row.names = FALSE)
+```
+
+Save table of coding mutations in dnds
+```{r}
+top <- details[details$dnds_variant_1500 == "Dnds gene" | details$dnds_variant_1500_splice == "Dnds gene",]
+top <- top[,1:15]
+top$Donor <- ID
+write.csv(top, paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/driver_info/",Iteration,"_dnds_genes.csv"), row.names = FALSE)
+```
+
+
+Pdf of tree with drivers no labels
+```{r}
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_drivers_age.pdf"),w=40,h=20)
+tree_em =plot_tree_em(tree_ultra_age, cex.label = 0)
+plot_tree_labels(tree_em,
+                 details = details,
+                 type="label",
+                 query.field = "protein_coding_chip_variant",
+                 data.frame(value="Protein coding variant in driver gene",col="red",pch = 17,stringsAsFactors = FALSE),
+                 label.field = "variant_ID",
+                 cex.label = 2.0)
+dev.off()
+```
+
+Pdf of tree with drivers no labels
+```{r}
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_drivers_mut.pdf"),w=60,h=20)
+tree_em =plot_tree_em(tree_ultra_mut, cex.label = 0)
+plot_tree_labels(tree_em,
+                 details = details,
+                 type = "label",
+                 query.field = "protein_coding_chip_variant",
+                 data.frame(value="Protein coding variant in driver gene",col="red",pch = 17,stringsAsFactors = FALSE),
+                 label.field = "variant_ID",
+                 cex.label = 2.0)
+dev.off()
+```
+
+
+Labelling expanded clades with non-synonymous mutations
+```{r}
+node_height_cutoff=0
+prop_cutoff=0.005
+
+min_total_samples=round(prop_cutoff*length(tree_ultra_mut$tip.label))
+
+clonal_expansion_nodes=sapply(1:nrow(tree_ultra_mut$edge), function(i) {
+  node=tree_ultra_mut$edge[i,2]
+  if(node <= length(tree_ultra_mut$tip.label)) {
+    result_1=FALSE
+  } else {
+    samples = extract.clade(node=node,tree_ultra_mut)$tip.label
+    result_1= length(samples)>=min_total_samples
+  }
+  result_2=nodeHeights(tree_ultra_mut)[tree_ultra_mut$edge[,2]==node,2] > node_height_cutoff
+  if(result_1 & result_2) {
+    ancestors=get_ancestral_nodes(node,tree_ultra_mut$edge)
+    ancestors = ancestors[ancestors != node]
+    result_3=TRUE
+    #result_3=all(nodeHeights(tree)[tree$edge[,2] %in% ancestors,2] < node_height_cutoff) #Can add this in if want to exclude downstream nodes from initial expansion
+    if(result_3) {
+      return(node)
+    } else {
+      return(NA)
+    }
+  } else {
+    return(NA)
+  }
+})
+
+clonal_expansion_nodes<-clonal_expansion_nodes[!is.na(clonal_expansion_nodes)]
+```
+
+Labelling the tree based on non-synonymous mutations
+```{r}
+#Plot the selected branches on the tree
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_with_non_syn.pdf"),w=40,h=20)
+tree=plot_tree(tree_ultra_mut,cex.label = 0)
+invisible(add_annotation(tree,
+               details,
+               matrices = NULL,
+               annot_function = highlight_nodes,
+               nodes=clonal_expansion_nodes
+))
+details$coding_expansion_node=ifelse(details$protein_coding_mutation=="Protein coding mutation" & details$node %in% clonal_expansion_nodes,1,0)
+plot_tree_labels(tree,
+                 details = details,
+                 type = "label",
+                 query.field = "coding_expansion_node",
+                 data.frame(value="1",col="black",lwd = 2,stringsAsFactors = FALSE),
+                 label.field = "variant_ID",
+                 cex.label = 1.5)
+
+dev.off()
+```
+
+
+Labelling tree based on dnds variants_1500
+```{r }
+
+#Plot the selected branches on the tree
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_with_dnds_1500.pdf"),w=40,h=20)
+tree=plot_tree(tree_ultra_mut,cex.label = 0)
+invisible(add_annotation(tree,
+               details,
+               matrices = NULL,
+               annot_function = highlight_nodes,
+               nodes=clonal_expansion_nodes
+))
+details$coding_expansion_node=ifelse(details$dnds_variant_1500 =="Dnds gene" & details$node %in% clonal_expansion_nodes,1,0)
+plot_tree_labels(tree,
+                 details = details,
+                 type = "label",
+                 query.field = "coding_expansion_node",
+                 data.frame(value="1",col="black",lwd = 2,stringsAsFactors = FALSE),
+                 label.field = "variant_ID",
+                 cex.label = 1.5)
+dev.off()
+```
+
+Labelling tree based on cancer genes
+```{r }
+
+#Plot the selected branches on the tree
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_cancer.pdf"),w=40,h=20)
+tree=plot_tree(tree_ultra_mut,cex.label = 0)
+invisible(add_annotation(tree,
+               details,
+               matrices = NULL,
+               annot_function = highlight_nodes,
+               nodes=clonal_expansion_nodes
+))
+details$coding_expansion_node=ifelse(details$cancer_drivers == "Cancer gene" & details$node %in% clonal_expansion_nodes,1,0)
+plot_tree_labels(tree,
+                 details = details,
+                 type = "label",
+                 query.field = "coding_expansion_node",
+                 data.frame(value="1",col="black",lwd = 2,stringsAsFactors = FALSE),
+                 label.field = "variant_ID",
+                 cex.label = 1.5)
+dev.off()
+```
+
+Viewing Y CN loss
+```{r,fig.width=8, fig.height=6}
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_xy_cov.pdf"), width = 8, height =6)
+ggplot(XY, aes(x=x, y=y)) +
+  geom_point() +
+  xlim(0,60)+
+  geom_abline(aes(intercept=2.5, slope=0.32), col = "grey")+
+  geom_abline(aes(intercept=-2.5, slope=0.32), col = "grey")+
+  geom_abline(aes(intercept=0, slope=0.04), col = "grey")+
+  geom_abline(aes(intercept=0, slope=0.64), col = "red")+
+  geom_abline(aes(intercept=0, slope=0.32), col = "red")+
+  theme_bw()
+dev.off() 
+```
+
+```{r}
+XY$cnY <- "none"
+
+XY$cnY[XY$y < (XY$y < XY$x*0.04)] <- "loss Y"
+XY$cnY[(XY$y > XY$x*0.04) & (XY$y < (XY$x*0.32) -2.5)] <- "partial loss Y"
+XY$cnY[XY$y > ((XY$x*0.32) +2.5)] <- "gain Y"
+
+```
+
+Save table of y loss
+```{r}
+write.csv(XY, paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/driver_info/",Iteration,"_y_loss.csv"))
+```
+
+Pdf tree with y loss and nodes
+```{r, fig.height = 40, fig.width =15}
+XY_label <- as.data.frame(XY[,c(1,4)])
+
+tree <- ggtree(tree_ultra_mut, size = 0.15) +# geom_tiplab(size=0.8)+
+  theme_tree2()+xlim(0,meanmut+100)+
+  geom_text(aes(label=node), size = 0.75, hjust = -0.3)+
+
+
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_labels_y_loss_nodes.pdf"),width=4,height=12)
+tree %<+% XY_label +
+  geom_tiplab(aes(fill = factor(cnY)),
+              size=0.8,
+              color = "black", # color for label font
+              geom = "label",  # labels not text
+              label.padding = unit(0.05, "lines"), # amount of padding around the labels
+              label.size = 0) # size of label border
+  dev.off()
+```
+
+Pdf tree with y loss
+```{r, fig.height = 40, fig.width =15}
+XY_label <- as.data.frame(XY[,c(1,4)])
+
+tree <- ggtree(tree_ultra_mut, size = 0.15) + geom_tiplab(size=0.8)+
+  theme_tree2()+xlim(0,meanmut+100)+
+
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_labels_y_loss.pdf"),width=4,height=12)
+tree %<+% XY_label +
+  geom_tiplab(aes(fill = factor(cnY)),
+              size=0.8,
+              color = "black", # color for label font
+              geom = "label",  # labels not text
+              label.padding = unit(0.05, "lines"), # amount of padding around the labels
+              label.size = 0) # size of label border
+  dev.off()
+```
+Pdf tree with auto CN changes
+```{r, fig.height = 40, fig.width =15}
+CN_label <- as.data.frame(CN)
+
+tree <- ggtree(tree_ultra_mut, size = 0.15) + geom_tiplab(size=0.8)+
+  theme_tree2()+xlim(0,meanmut+100)+
+
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_labels_auto_cn.pdf"),width=4,height=12)
+tree %<+% CN_label +
+  geom_tiplab(aes(fill = factor(Auto_cn)),
+              size=0.8,
+              color = "black", # color for label font
+              geom = "label",  # labels not text
+              label.padding = unit(0.05, "lines"), # amount of padding around the labels
+              label.size = 0) # size of label border
+  dev.off()
+```
+
+Pdf tree with auto CN changes and nodes
+```{r, fig.height = 40, fig.width =15}
+CN_label <- as.data.frame(CN)
+
+tree <- ggtree(tree_ultra_mut, size = 0.15) +# geom_tiplab(size=0.8)+
+  theme_tree2()+xlim(0,meanmut+100)+
+  geom_text(aes(label=node), size = 0.75, hjust = -0.3)+
+
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_labels_auto_cn_nodes.pdf"),width=4,height=12)
+tree %<+% CN_label +
+  geom_tiplab(aes(fill = factor(Auto_cn)),
+              size=0.8,
+              color = "black", # color for label font
+              geom = "label",  # labels not text
+              label.padding = unit(0.05, "lines"), # amount of padding around the labels
+              label.size = 0) # size of label border
+  dev.off()
+```
+
+Pdf tree with SV changes
+```{r, fig.height = 40, fig.width =15}
+SV_label <- as.data.frame(SV)
+
+tree <- ggtree(tree_ultra_mut, size = 0.15) + geom_tiplab(size=0.8)+
+  theme_tree2()+xlim(0,meanmut+100)+
+  
+
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_labels_SV.pdf"),width=4,height=12)
+tree %<+% SV_label +
+  geom_tiplab(aes(fill = factor(SV)),
+              size=0.8,
+              color = "black", # color for label font
+              geom = "label",  # labels not text
+              label.padding = unit(0.05, "lines"), # amount of padding around the labels
+              label.size = 0) # size of label border
+  dev.off()
+```
+
+Pdf tree with SV changes and nodes
+```{r, fig.height = 40, fig.width =15}
+SV_label <- as.data.frame(SV)
+
+tree <- ggtree(tree_ultra_mut, size = 0.15) + #geom_tiplab(size=0.8)+
+  theme_tree2()+xlim(0,meanmut+100)+
+  geom_text(aes(label=node), size = 0.75, hjust = -0.3)+
+
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_labels_SV_nodes.pdf"),width=4,height=12)
+tree %<+% SV_label +
+  geom_tiplab(aes(fill = factor(SV)),
+              size=0.8,
+              color = "black", # color for label font
+              geom = "label",  # labels not text
+              label.padding = unit(0.05, "lines"), # amount of padding around the labels
+              label.size = 0) # size of label border
+  dev.off()
+```
+
+Pdf tree with cell source marked
+```{r, fig.height = 40, fig.width =15}
+sample_type_label <- as.data.frame(sample_type)
+
+tree <- ggtree(tree_ultra_age, size = 0.15) +# geom_tiplab(size=0.8)+
+  theme_tree2()+xlim(0,age + 4)+
+  #geom_text(aes(label=node), size = 0.75, hjust = -0.3)+
+
+
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_source_nodes.pdf"),width=4,height=12)
+tree %<+% sample_type_label +
+  geom_tiplab(aes(fill = factor(sample_type)),
+              size=0.2,
+              color = "black", # color for label font
+              geom = "label",  # labels not text
+              label.padding = unit(0.05, "lines"), # amount of padding around the labels
+              label.size = 0) # size of label border
+  dev.off()
+```
+
+Save table of PB_HSC nodes
+
+```{r}
+tips <- as.data.frame(tree$tip.label)
+tips$tip_number <- c(1:Ntip(tree))
+colnames(tips) <- c("tip_label", "tip_number")
+tips_pb <- tips[tips$tip_label %in% PB_HSCs,]
+write.csv(tips_pb, paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/driver_info/",Iteration,"_PB_nodes.csv"))
+```
+
+Viewing early tree - cut off = 60 (around the time of birth)
+```{r}
+tree <- read.tree(tree_file_path)
+cut_off = 60
+
+#Create tree which includes only nodes below cutoff height
+  nodeheights = nodeHeights(tree)
+  tree_early = tree
+ 
+  #Filter edges and tip labels only for those below cut off
+  tree_early$edge = tree$edge[nodeheights[,1] < cut_off,]    
+  tree_early$edge.length = tree$edge.length[nodeheights[,1] < cut_off]
+  tree_early$tip.label_old = tree_early$edge[,2][!tree_early$edge[,2] %in% tree_early$edge[,1]]
+ 
+  #Renumber the tips and edges according to the tree-object conventions (tips are the 1:length(tip.label); internal nodes labelled there-after)
+  tree_early$tip.label = 1:length(tree_early$tip.label_old) #Rename the tips
+  tree_early$Nnode = length(unique(tree_early$edge[,1])) #Change the Nnode object to the correct number of internal nodes
+  tree_early$node.label = unique(tree_early$edge[,1])
+  for(i in 1:length(tree_early$tip.label)) { #Renumber the terminal branches according to tip numbers
+    tree_early$edge[,2][tree_early$edge[,2] == tree_early$tip.label_old[i]] <- tree_early$tip.label[i]
+  }
+  old_node_numbers = unique(tree_early$edge[,1])
+  new_node_numbers = (length(tree_early$tip.label) + 1):(length(tree_early$tip.label) + tree_early$Nnode) #Define new internal node numbers
+  for(i in 1:length(new_node_numbers)) { #Renumber the edges according to new node numbers
+    tree_early$edge[,1][tree_early$edge[,1] == old_node_numbers[i]] <- new_node_numbers[i]
+    tree_early$edge[,2][tree_early$edge[,2] == old_node_numbers[i]] <- new_node_numbers[i]
+  }
+
+#Cut total lineage lengths to (cut off +1)
+tree_early$edge.length[tree_early$edge[,2] %in% 1:length(tree_early$tip.label)] <- (cut_off - nodeHeights(tree_early)[tree_early$edge[,2] %in% 1:length(tree_early$tip.label),1])
+length(tree_early$tip.label)
+
+
+```
+
+Save early tree
+```{r}
+write.tree(tree_early, paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_files/",Iteration,"_early.tree"))
+```
+
+
+Pdf of early tree with labels
+```{r}
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_labels_early.pdf"),width=4,height=12)
+ggtree(tree_early, size = 0.15) + geom_tiplab(size=0.8)+
+  theme_tree2()+xlim(0,max(fortify(tree_early)$x)*1.3)
+dev.off()
+```
+
+Pdf of early tree without labels
+```{r}
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_early.pdf"),width=4,height=12)
+ggtree(tree_early, size = 0.15) + #geom_tiplab(size=1.5)+
+  theme_tree2()+xlim(0,max(fortify(tree_early)$x)*1.3)
+dev.off()
+```
+
+Make early tree ultrametric 
+```{r}
+tree_early_ultra <- make.ultrametric.tree(tree_early)
+write.tree(tree_early_ultra, paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_files/",Iteration,"_eaerly_ultra.tree"))
+```
+
+
+Phylodyn for early tree 
+```{r, fig.width=9, fig.height=8}
+pdf(paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/tree_pdfs/",Iteration,"_phylodyn_early.pdf"),width=9,height=8)
+tree.BNPR.bespoke <- BNPR(tree_early_ultra)
+plot_BNPR(tree.BNPR.bespoke)
+dev.off()
+```

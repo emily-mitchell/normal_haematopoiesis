@@ -1,0 +1,384 @@
+---
+title: "Subs Cut analysis"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Open libraries
+```{r}
+suppressMessages(library(GenomicRanges))
+suppressMessages(library(dplyr))
+suppressMessages(library(tidyr))
+suppressMessages(library(ggplot2))
+suppressMessages(library(BiocGenerics))
+suppressMessages(library(knitr))
+suppressMessages(library(stringr))
+suppressMessages(library(ggtree))
+suppressMessages(library(ape))
+suppressMessages(library(seqinr))
+suppressMessages(library(data.table))
+suppressMessages(library(phytools))
+suppressMessages(library(Rsamtools))
+suppressMessages(library(MASS))
+```
+
+Set working directory and define files and paths
+```{r}
+ID = "KX001" #Edit
+Iteration = "KX001_4" #Edit
+Run_ID = "KX001_4_01" #Edit
+filtering_ID = "standard_rho01" #Edit
+lim_snv = 1000 #Edit- used for ylim_snv on graphs of mutation burden
+br_snv = c(200,400,600,800,1000)
+lim_indel = 100 #Edit- used for ylim_snv on graphs of mutation burden
+br_indel = c(20,40,60,80,100)
+setwd = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/subs/vaf_cut/") #Ensure this directory exists and copy mats_and_params file there
+mats_and_param_file = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/output/mats_and_params_", Run_ID)
+tree_file_path = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/output/tree_", Run_ID,"_",filtering_ID, ".tree")
+file_annot = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/output/annotated_mut_set_", Run_ID,"_",filtering_ID)
+sensitivity_df = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/trees/vaf_cut/output/",Iteration,"_sensitivity")
+```
+
+Load "local drive" functions
+```{r messages = FALSE}
+source('~/Documents/Bioinformatics/CGP/Functions/foetal.filters.parallel.R')
+source('~/Documents/Bioinformatics/CGP/Functions/phytools_scripts.R')
+source('~/Documents/Bioinformatics/CGP/Functions/plot_tree_examples.R')
+source('~/Documents/Bioinformatics/CGP/Functions/plot_tree.R')
+source('~/Documents/Bioinformatics/CGP/Functions/targeted_analysis_functions.R')
+source('~/Documents/Bioinformatics/CGP/Functions/tree_functions_em.R')
+source('~/Documents/Bioinformatics/CGP/Functions/tree_visualisation_em.R')
+```
+
+Load input files
+```{r}
+load(file_annot)
+load(mats_and_param_file)
+tree <- read.tree(tree_file_path)
+sensitivity <- read.table(sensitivity_df, stringsAsFactors = F, header = T)
+```
+
+Save matrices of NV and NR
+```{r}
+write.csv(filtered_muts$COMB_mats.tree.build$NR, paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/subs/vaf_cut/mutation_burden/",Iteration,"_NR.csv"), row.names = T, quote=F)
+write.csv(filtered_muts$COMB_mats.tree.build$NV, paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/subs/vaf_cut/mutation_burden/",Iteration,"_NV.csv"), row.names = T, quote=F)
+```
+
+
+Assessing SNV burden per colony
+```{r}
+SNVs_per_sample = colSums(filtered_muts$COMB_mats.tree.build$Genotype_bin[filtered_muts$COMB_mats.tree.build$mat$Mut_type == "SNV",] == 1)
+mean(SNVs_per_sample); sd(SNVs_per_sample); range(SNVs_per_sample)
+
+
+Mutation_burden <- as.data.frame(colSums(filtered_muts$COMB_mats.tree.build$Genotype_bin[filtered_muts$COMB_mats.tree.build$mat$Mut_type == "SNV",] == 1))
+Mutation_burden$Mean_depth <- (colSums(filtered_muts$COMB_mats.tree.build$NR)/nrow(filtered_muts$COMB_mats.tree.build$NR))
+colnames(Mutation_burden)[1] <- "Number_mutations"
+Mutation_burden$Sample <- rownames(Mutation_burden)
+Summary_snvs <- as.data.frame(cbind(Mutation_burden[,c(3,1,2)]))
+
+```
+
+
+Assessing Indel burden per colony
+```{r}
+INDELs_per_sample = colSums(filtered_muts$COMB_mats.tree.build$Genotype_bin[filtered_muts$COMB_mats.tree.build$mat$Mut_type == "INDEL",] == 1)
+mean(INDELs_per_sample); sd(INDELs_per_sample); range(INDELs_per_sample)
+
+
+Indel_burden <- as.data.frame(colSums(filtered_muts$COMB_mats.tree.build$Genotype_bin[filtered_muts$COMB_mats.tree.build$mat$Mut_type == "INDEL",] == 1))
+Indel_burden$Mean_depth <- (colSums(filtered_muts$COMB_mats.tree.build$NR)/nrow(filtered_muts$COMB_mats.tree.build$NR))
+colnames(Indel_burden)[1] <- "Number_indels"
+Indel_burden$Sample <- rownames(Indel_burden)
+Summary_indels <- as.data.frame(cbind(Indel_burden[,c(3,1,2)]))
+
+```
+
+
+Model to correct mutation burden for sequencing depth of coverage 
+INPUT
+Summary_snvs: data.frame with one row per sample and the following columns:
+Mean_depth: the average coverage per sample
+Number_mutations: the number of mutations per sample
+```{r}
+### Asymptotic model
+# Sort data
+sorted = sortedXyData(Summary_snvs$Mean_depth, Summary_snvs$Number_mutations)
+
+# Run model
+model.as = NLSstAsymptotic(sorted)
+# Note: you will be alerted if the model does not converge (typically if data are not asymptotic or there is too little data)
+
+# Look at results
+model.as
+
+```
+
+Create model function
+```{r}
+mymodel = function(x){
+  b0 = model.as[1]
+  b1 = model.as[2]
+  lrc = model.as[3]
+  b0 + b1*(1-exp(-exp(lrc) * x))  
+}
+```
+
+Plot model
+```{r}
+myrange=1:round(max(Summary_snvs$Mean_depth))
+asp = data.frame(x=myrange, y=unlist(lapply(myrange, FUN=mymodel)))
+suppressWarnings(ggplot(Summary_snvs) +
+  ylim(1,lim_snv)+
+  xlim(0,50)+
+  geom_point(aes(x=Mean_depth,y=Number_mutations), data=Summary_snvs, pch=21) + 
+  theme_bw() +
+  scale_fill_brewer(type="qual", palette=3) + 
+  ylab("# Mutations") +
+  xlab("Coverage per colony")+
+  geom_line(aes(x=x, y=y), data=asp)+
+  labs(title = "SNV burden with asymptotic regression line"))
+```
+
+
+
+
+
+Normalize mutation burden to a read depth of 30X
+```{r}
+new_Number_mutations = function(rd, Number_mutations){
+  Number_mutations + ( mymodel(30) - mymodel(rd)) ## can change depth here
+}
+Summary_snvs$Number_mutations_adj_as = apply(Summary_snvs, MARGIN=1, FUN=function(X)  new_Number_mutations(rd=as.numeric(X[which(colnames(Summary_snvs)=="Mean_depth")]), Number_mutations=as.numeric(X[which(colnames(Summary_snvs)=="Number_mutations")]) ) )
+ggplot(Summary_snvs) +
+  ylim(0,lim_snv)+
+  xlim(0,50)+
+  theme_bw() +
+  geom_point(aes(Mean_depth,Number_mutations_adj_as), pch=21) + 
+  ylab("# Mutations") +
+  xlab("Coverage per colony")+
+  labs(title ="SNV burden corrected for depth of sequencing")
+```
+
+
+```{r}
+ggplot(Summary_snvs) +
+  ylim(0,lim_snv)+
+  xlim(0,50)+
+  theme_bw() +
+  geom_smooth(aes(Mean_depth,Number_mutations_adj_as), pch=21) + 
+  ylab("# Mutations") +
+  xlab("Coverage per colony")+
+labs(title ="SNV burden corrected for depth of sequencing")
+```
+
+Save table of adjusted and unadjusted mutation burdens
+```{r}
+write.table(Summary_snvs, paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/subs/vaf_cut/mutation_burden/",Iteration,"_sub_dep_adj.txt"), sep="\t", col.names = T, row.names = F, quote=F)
+```
+
+
+Model to correct indel burden for sequencing depth of coverage 
+```{r}
+### Asymptotic model
+# Sort data
+sorted = sortedXyData(Summary_indels$Mean_depth, Summary_indels$Number_indels)
+
+# Run model
+model.as = NLSstAsymptotic(sorted)
+# Note: you will be alerted if the model does not converge (typically if data are not asymptotic or there is too little data)
+# If data are more linear then a linear regression is reasonable.
+
+# Look at results
+model.as
+
+```
+Create model function
+```{r}
+mymodel = function(x){
+  b0 = model.as[1]
+  b1 = model.as[2]
+  lrc = model.as[3]
+  b0 + b1*(1-exp(-exp(lrc) * x))  
+}
+```
+
+Plot model
+```{r}
+myrange=1:round(max(Summary_indels$Mean_depth))
+asp = data.frame(x=myrange, y=unlist(lapply(myrange, FUN=mymodel)))
+suppressWarnings(ggplot(Summary_indels) +
+  ylim(1,lim_indel)+
+  xlim(0,50)+
+  geom_point(aes(x=Mean_depth,y=Number_indels), data=Summary_indels, pch=21) + 
+  theme_bw() +
+  scale_fill_brewer(type="qual", palette=3) + 
+  ylab("# Indels") +
+  xlab("Coverage per colony")+
+  geom_line(aes(x=x, y=y), data=asp)+
+  labs(title ="Indel burden with asymptotic regression line"))
+```
+
+
+
+
+Normalize mutation burden to a read depth of 30X.
+```{r}
+new_Number_indels = function(rd, Number_indels){
+  Number_indels + ( mymodel(30) - mymodel(rd)) ## can change depth here
+}
+Summary_indels$Number_indels_adj_as = apply(Summary_indels, MARGIN=1, FUN=function(X)  new_Number_indels(rd=as.numeric(X[which(colnames(Summary_indels)=="Mean_depth")]), Number_indels=as.numeric(X[which(colnames(Summary_indels)=="Number_indels")]) ) )
+ggplot(Summary_indels) +
+  ylim(0,lim_indel)+
+  xlim(0,50)+
+  theme_bw() +
+  geom_point(aes(Mean_depth,Number_indels_adj_as), pch=21) + 
+  ylab("# Indels") +
+  xlab("Coverage per colony")+
+  labs(title ="Indel burden corrected for depth of sequencing")
+```
+
+```{r}
+ggplot(Summary_indels) +
+  ylim(0,lim_indel)+
+  xlim(0,50)+
+  theme_bw() +
+  geom_smooth(aes(Mean_depth,Number_indels_adj_as), pch=21) + 
+  ylab("# Mutations") +
+  xlab("Coverage per colony")+
+  labs(title ="Indel burden corrected for depth of sequencing")
+```
+
+Save table of unadjusted and adjusted indel burdens per sample
+```{r}
+write.table(Summary_indels, paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/subs/vaf_cut/mutation_burden/",Iteration,"_indel_dep_adj.txt"), sep="\t", col.names = T, row.names = F, quote=F)
+```
+
+Generate input for dnds - all muts
+```{r}
+dnds_input <- filtered_muts$COMB_mats.tree.build$mat[,2:5]
+dnds_input$SampleID <- ID
+colnames(dnds_input) <- c("Chr","Pos","Ref","Alt","SampleID")
+dnds_input <- dnds_input[,c("SampleID","Chr","Pos","Ref","Alt")]
+write.table(dnds_input, paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/subs/vaf_cut/dnds/",Iteration, "_dnds_all.txt"), sep="\t", col.names = T, row.names = F, quote=F)
+
+create_dnds_files = function(mat, select_vector = NULL) {
+  if(is.null(select_vector)) {dnds_file = mat[,2:5]} else {dnds_file = mat[select_vector,2:5]}
+  dnds_file$SampleID <- ID
+  colnames(dnds_file) <- c("Chr","Pos","Ref","Alt","SampleID")
+  dnds_file <- dnds_file[,c("SampleID","Chr","Pos","Ref","Alt")]
+  return(dnds_file)
+}
+
+shared_dnds_file = create_dnds_files(filtered_muts$COMB_mats.tree.build$mat, select_vector = filtered_muts$COMB_mats.tree.build$mat$mut_ref %in% rownames(filtered_muts$Genotype_shared_bin))
+
+private_dnds_file = create_dnds_files(filtered_muts$COMB_mats.tree.build$mat, select_vector = !filtered_muts$COMB_mats.tree.build$mat$mut_ref %in% rownames(filtered_muts$Genotype_shared_bin))
+
+write.table(shared_dnds_file, paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/subs/vaf_cut/dnds/",Iteration, "_dnds_shared.txt"), sep="\t", col.names = T, row.names = F, quote=F)
+
+write.table(private_dnds_file, paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/subs/vaf_cut/dnds/",Iteration, "_dnds_private.txt"), sep="\t", col.names = T, row.names = F, quote=F)
+```
+
+
+Table of mutation calls per sample from tree
+```{r}
+new_genotype_mat <- filtered_muts$COMB_mats.tree.build$Genotype_bin
+#Set all the genotypes to 0 as a baseline
+new_genotype_mat[,] <- 0
+details <- filtered_muts$COMB_mats.tree.build$mat
+ 
+#Now go through each of the mutations in turn and replace the 0's with 1's
+for(i in tree$edge[,2]) {
+  node=i
+  info=get_edge_info(tree,details,node)
+  samples=info$samples
+  muts=details$mut_ref[info$idx]
+  new_genotype_mat[muts,samples] <- 1
+}
+
+write.csv(new_genotype_mat, paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/subs/vaf_cut/mutation_burden/",Iteration, "_mutation_calls_tree.csv"),row.names = T, quote=F)
+```
+
+
+Creating vcf files per sample
+```{r}
+new_genotype_mat <- cbind(filtered_muts$COMB_mats.tree.build$mat[,2:5],new_genotype_mat[,])
+
+samples = colnames(new_genotype_mat[5:ncol(new_genotype_mat)])
+
+for (sample in samples) {
+#Write vcf files for VariantCaller analysis - separate out "All mutations", "Shared mutations", "Private mutations".
+vcf_file = new_genotype_mat[(new_genotype_mat[,sample] >0),c(1:4)]
+names(vcf_file) = c("#CHROM", "POS", "REF", "ALT")
+
+#Add the required null columns
+vcf_file$ID = vcf_file$QUAL = vcf_file$FILTER = vcf_file$INFO = "."
+
+#Rearrange into correct order
+vcf_file = vcf_file[,c(1,2,5,3,4,6,7,8)]
+
+#Write files
+write.table(vcf_file, sep = "\t", quote = FALSE, file = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/subs/vaf_cut/hdp/",sample,"_mutations_all.vcf"), row.names = FALSE)
+}
+```
+
+Generate input for signature analysis
+```{r}
+all_muts <- filtered_muts$COMB_mats.tree.build$mat[filtered_muts$COMB_mats.tree.build$mat$Mut_type == "SNV",]
+all_muts <- all_muts[,c(2:5,7)]
+all_muts$SampleID <- paste0(ID, "_", all_muts$node)
+all_muts <- all_muts[,c(1:4,6)]
+colnames(all_muts) <- c("Chr","Pos","Ref","Alt","SampleID")
+```
+
+Create data.frame for signature analysis - samples pooled
+```{r}
+genomeFile = "/Users/em16/Documents/Bioinformatics/CGP/Reference_genomes/hs37d5.fa"
+
+subs_only = all_muts
+nrow(subs_only)
+  colnames(subs_only) = c("chr", "pos", "ref", "mut")
+  subs_only = subs_only[(subs_only$ref %in% c("A","C","G","T")) & (subs_only$mut %in% c("A","C","G","T")) & subs_only$chr %in% c(1:22,"X","Y"),]
+  subs_only$trinuc_ref = as.vector(scanFa(genomeFile, GRanges(subs_only$chr, IRanges(subs_only$pos-1, subs_only$pos+1))))
+  
+  # 2. Annotating the mutation from the pyrimidine base
+  ntcomp = c(T="A",G="C",C="G",A="T")
+  subs_only$sub = paste(subs_only$ref,subs_only$mut,sep=">")
+  subs_only$trinuc_ref_py = subs_only$trinuc_ref
+  for (j in 1:nrow(subs_only)) {
+    if (subs_only$ref[j] %in% c("A","G")) { # Purine base
+      subs_only$sub[j] = paste(ntcomp[subs_only$ref[j]],ntcomp[subs_only$mut[j]],sep=">")
+      subs_only$trinuc_ref_py[j] = paste(ntcomp[rev(strsplit(subs_only$trinuc_ref[j],split="")[[1]])],collapse="")
+    }
+  }
+  
+ # 3. Counting subs
+  freqs = table(paste(subs_only$sub,paste(substr(subs_only$trinuc_ref_py,1,1),substr(subs_only$trinuc_ref_py,3,3),sep="-"),sep=","))
+  sub_vec = c("C>A","C>G","C>T","T>A","T>C","T>G")
+  ctx_vec = paste(rep(c("A","C","G","T"),each=4),rep(c("A","C","G","T"),times=4),sep="-")
+  full_vec = paste(rep(sub_vec,each=16),rep(ctx_vec,times=6),sep=",")
+  freqs_full = freqs[full_vec]
+  freqs_full[is.na(freqs_full)] = 0
+  names(freqs_full) = full_vec
+  
+  xstr = paste(substr(full_vec,5,5), substr(full_vec,1,1), substr(full_vec,7,7), sep="")
+  
+  colvec = rep(c("dodgerblue","black","red","grey70","olivedrab3","plum2"),each=16)
+  y = freqs_full
+  maxy = max(y)
+  
+  h=barplot(y, las=2, col=colvec, border=NA, ylim_snv=c(0,maxy*1.5), space=1, cex.names=0.6, names.arg=xstr, ylab="# SNVs")
+  mtext(side=4, text= ID)
+  for (j in 1:length(sub_vec)) {
+    xpos = h[c((j-1)*16+1,j*16)]
+    rect(xpos[1]-0.5, maxy*1.2, xpos[2]+0.5, maxy*1.3, border=NA, col=colvec[j*16])
+    text(x=mean(xpos), y=maxy*1.3, pos=3, label=sub_vec[j])
+  } 
+```
+
+
