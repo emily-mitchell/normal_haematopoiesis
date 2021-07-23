@@ -1,0 +1,38 @@
+---
+title: "Estimating N (HSC population size)"
+output: html_document
+author: Emily Mitchell
+---
+
+Script to estimate the HSC population size based on parameter estimates from our data and previously published work.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+N.sim=vector(mode = "list",length=100000)
+for (i in 1:100000) {
+tel_loss_bp_per_year <- runif(1,30,40) # range covering estimated HSC telomere loss per year from our own data (30 bp) and granulocyte telomere loss per year across many individuals (38 bp) from published data
+tel_loss_division <- runif(1,30,100) # range of published HSC telomere loss in bp per cell division
+symm_division_rate <- runif(1,0.8,1) # proportion of cell divisions that are symmetric
+cell_division <- tel_loss_bp_per_year/tel_loss_division # number cell divisions per year
+symm_division <- cell_division*symm_division_rate # number symmetric cell divsions per year
+mean_generation_time <- 1/symm_division
+Nt <- runif(1, 50000, 250000) # HSC Nt as estimated from our dataset
+N <- Nt / mean_generation_time
+N.sim[i] <- N
+}
+```
+
+```{r}
+N.sim <- as.numeric(N.sim)
+N.sim_95CI=quantile(N.sim,probs=c(0.025,0.975))
+N.sim_95CI
+```
+
+```{r}
+mean(N.sim)
+```
+

@@ -1,0 +1,195 @@
+---
+title: "ppc graphs"
+output: html_document
+author: Emily Mitchell
+---
+
+```{r}
+library(ape)
+library(stringr)
+library(tidyr)
+library(seqinr)
+library(phytools)
+library(abc)
+library(ggplot2)
+library(devtools)
+library(MCMCglmm)
+library(phangorn)
+library(spam)
+library(INLA)
+library(ggtree)
+```
+
+Set working directory
+```{r}
+ID = "KX003"
+Iteration = "KX003_5"
+Run_ID = "KX003_5_01"
+my_working_directory = (paste0("/Users/em16/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/pop_modelling/PPC_output/"))
+setwd = my_working_directory
+```
+
+Load files
+```{r}
+load(paste0("/Users/em16/Documents/PhD/Sequencing_results/DNA_seq/",ID,"/",Iteration,"/pop_modelling/PPC_output/",ID,"_tables"))
+```
+
+```{r}
+stats <- as.data.frame(KX003.summary_stats.ppc)
+data <- as.data.frame(KX003.summary_stats.data)
+```
+
+```{r}
+hist(stats$n_singletons_1, main = "Number singleton lineages time point 1", xlab = "Number singleton lineages", xlim = c(0,250), breaks = 20)
+abline(v = data$n_singletons_1, col = 2)
+```
+
+```{r}
+hist(stats$n_singletons_2, main = "Number singleton lineages time point 2", xlab = "Number singleton lineages", xlim = c(0,200), breaks = 20)
+abline(v = data$n_singletons_2, col = 2)
+```
+
+```{r}
+hist(stats$n_singletons_3, main = "Number singleton lineages time point 3", xlab = "Number singleton lineages", xlim = c(140,350), breaks = 20)
+abline(v = data$n_singletons_3, col = 2)
+```
+```{r}
+hist(stats$n_singletons_4, main = "Number singleton lineages time point 4", xlab = "Number singleton lineages", xlim = c(260,360), breaks = 20)
+abline(v = data$n_singletons_4, col = 2)
+```
+
+
+
+```{r}
+hist(stats$clade_size_a_1, xlim = c(0,130), main = "Size of largest clade time point 1", xlab = "Size of largest clade", breaks = 20)
+abline(v = data$clade_size_a_1, col = 2)
+```
+```{r}
+hist(stats$clade_size_b_1, xlim = c(0,30), main = "Size of second largest clade time point 1", xlab = "Size of largest clade", breaks = 20)
+abline(v = data$clade_size_b_1, col = 2)
+```
+
+```{r}
+hist(stats$clade_size_c_1, xlim = c(0,30), main = "Size of third largest clade time point 1", xlab = "Size of largest clade", breaks = 20)
+abline(v = data$clade_size_c_1, col = 2)
+```
+
+```{r}
+hist(stats$clade_size_d_1, xlim = c(0,30), main = "Size of fourth largest clade time point 1", xlab = "Size of largest clade", breaks = 20)
+abline(v = data$clade_size_d_1, col = 2)
+```
+
+```{r}
+hist(stats$clade_size_e_1, xlim = c(0,30), main = "Size of fifth largest clade time point 1", xlab = "Size of largest clade", breaks = 20)
+abline(v = data$clade_size_e_1, col = 2)
+```
+
+```{r}
+hist(stats$clade_size_a_2, xlim = c(0,130), main = "Size of largest clade time point 2", xlab = "Size of largest clade", breaks = 20)
+abline(v = data$clade_size_a_2, col = 2)
+```
+```{r}
+hist(stats$clade_size_b_2, xlim = c(0,30), main = "Size of second largest clade time point 2", xlab = "Size of largest clade", breaks = 20)
+abline(v = data$clade_size_b_2, col = 2)
+```
+
+```{r}
+hist(stats$clade_size_c_2, xlim = c(0,30), main = "Size of third largest clade time point 2", xlab = "Size of largest clade", breaks = 20)
+abline(v = data$clade_size_c_2, col = 2)
+```
+
+```{r}
+hist(stats$clade_size_d_2, xlim = c(0,30), main = "Size of fourth largest clade time point 2", xlab = "Size of largest clade", breaks = 20)
+abline(v = data$clade_size_d_2, col = 2)
+```
+
+```{r}
+hist(stats$clade_size_e_2, xlim = c(0,30), main = "Size of fifth largest clade time point 2", xlab = "Size of largest clade", breaks = 20)
+abline(v = data$clade_size_e_2, col = 2)
+```
+
+
+```{r}
+hist(stats$clade_size_a_3, xlim = c(0,30), main = "Size of largest clade time point 3", xlab = "Size of largest clade", breaks = 20)
+abline(v = data$clade_size_a_3, col = 2)
+```
+```{r}
+hist(stats$clade_size_b_3, xlim = c(0,30), main = "Size of second largest clade time point 3", xlab = "Size of largest clade", breaks = 20)
+abline(v = data$clade_size_b_3, col = 2)
+```
+
+```{r}
+hist(stats$clade_size_c_3, xlim = c(0,15), main = "Size of third largest clade time point 3", xlab = "Size of largest clade", breaks = 20)
+abline(v = data$clade_size_c_3, col = 2)
+```
+
+```{r}
+hist(stats$clade_size_d_3, xlim = c(0,15), main = "Size of fourth largest clade time point 3", xlab = "Size of largest clade", breaks = 20)
+abline(v = data$clade_size_d_3, col = 2)
+```
+
+```{r}
+hist(stats$clade_size_e_3, xlim = c(0,15), main = "Size of fifth largest clade time point 3", xlab = "Size of largest clade", breaks = 20)
+abline(v = data$clade_size_e_3, col = 2)
+```
+
+```{r}
+hist(stats$clade_size_a_4, xlim = c(0,15), main = "Size of largest clade time point 4", xlab = "Size of largest clade", breaks = 20)
+abline(v = data$clade_size_a_4, col = 2)
+```
+```{r}
+hist(stats$clade_size_b_4, xlim = c(0,15), main = "Size of second largest clade time point 4", xlab = "Size of largest clade", breaks = 20)
+abline(v = data$clade_size_b_4, col = 2)
+```
+
+```{r}
+hist(stats$clade_size_c_4, xlim = c(0,15), main = "Size of third largest clade time point 4", xlab = "Size of largest clade", breaks = 20)
+abline(v = data$clade_size_c_4, col = 2)
+```
+
+```{r}
+hist(stats$clade_size_d_4, xlim = c(0,15), main = "Size of fourth largest clade time point 4", xlab = "Size of largest clade", breaks = 20)
+abline(v = data$clade_size_d_4, col = 2)
+```
+
+```{r}
+hist(stats$clade_size_e_4, xlim = c(0,15), main = "Size of fifth largest clade time point 4", xlab = "Size of largest clade", breaks = 20)
+abline(v = data$clade_size_e_4, col = 2)
+```
+
+```{r}
+hist(stats$ltt_1, xlim = c(0,200), main = "Number lineages time point 1", xlab = "Number lineages", breaks = 20)
+abline(v = data$ltt_1, col = 2)
+```
+```{r}
+hist(stats$ltt_2, xlim = c(0,250), main = "Number lineages time point 2", xlab = "Number lineages", breaks = 20)
+abline(v = data$ltt_2, col = 2)
+```
+
+```{r}
+hist(stats$ltt_3, xlim = c(200,350), main = "Number lineages time point 3", xlab = "Number lineages", breaks = 20)
+abline(v = data$ltt_3, col = 2)
+```
+
+```{r}
+hist(stats$ltt_4, xlim = c(280,340), main = "Number lineages time point 4", xlab = "Number lineages", breaks = 20)
+abline(v = data$ltt_4, col = 2)
+```
+
+```{r}
+hist(stats$coal_1, main = "Number coalescences between timepoint 1 and timepoint 2", xlab = "Number coalescences", xlim = c(0,80), breaks = 20)
+abline(v = data$coals_1, col = 2)
+```
+
+```{r}
+hist(stats$coal_2, main = "Number coalescences between timepoint 2 and timepoint 3", xlab = "Number coalescences", xlim = c(5,250), breaks = 20)
+abline(v = data$coals_2, col = 2)
+```
+```{r}
+hist(stats$coal_3, main = "Number coalescences between timepoint 3 and timepoint 4", xlab = "Number coalescences", xlim = c(0,100), breaks = 20)
+abline(v = data$coals_3, col = 2)
+```
+
+
+
+

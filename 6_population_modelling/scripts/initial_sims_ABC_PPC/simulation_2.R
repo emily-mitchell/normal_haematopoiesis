@@ -1,14 +1,12 @@
 ## Run on farm5
+
+# Author: Emily Mitchell
+
 args = commandArgs(TRUE)
 
 ##SET param_ID AND FILEPATHS
-# RUNID = as.character(args[1])
-input_file_path = toString(args[1])
+RUNID = as.character(args[1])
 output_directory = toString(args[2])
-pp_sim_index=as.integer(args[3])
-resim_run_index=as.integer(args[4])
-n_sims_per_job=as.integer(args[5])
-source_directory = toString(args[6])
 
 library(ape)
 library(stringr)
@@ -28,68 +26,67 @@ library(rsimpop)
 ID = "KX003"
 Iteration = "KX003_5"
 stat_time=c(0.2,0.4,0.6,0.8)
-my_working_directory = output_directory
+my_working_directory = (paste0("/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/",Iteration,"/sim2/"))
 
 ##Initialise the environment
-setwd("/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/")
-source("/lustre/scratch117/casm/team154/em16/R_scripts/functions/modelling_functions.R")
 source("/lustre/scratch117/casm/team154/em16/R_scripts/functions/filters_parallel_functions.R")
 source("/lustre/scratch117/casm/team154/em16/R_scripts/functions/tree_functions.R")
 setwd("/lustre/scratch119/casm/team154pc/ms56/fetal_HSC/treemut"); source("treemut.R");setwd(my_working_directory)
 
 #Specify inputs
-run = resim_run_index
+run = 5
 WGS_sequenced = 328
-nsim_per_job = n_sims_per_job
-
+nsim_per_job = 200
 age = 81
 midlife = 20:50
 latelife = 61:age
 change1=15:19
 change2=51:60
-
 number_params=3
+cols_params= c("target_pop","midlife_pop_change","latelife_pop_change")
 cols_params= c("target_pop","midlife_pop_change","latelife_pop_change")
 number_stats=32
 cols_stats= c("mean_muts_sim", "n_singletons_1","clade_size_a_1","clade_size_b_1","clade_size_c_1","clade_size_d_1","clade_size_e_1","n_singletons_2","clade_size_a_2","clade_size_b_2","clade_size_c_2","clade_size_d_2","clade_size_e_2", "n_singletons_3", "clade_size_a_3","clade_size_b_3","clade_size_c_3","clade_size_d_3","clade_size_e_3","n_singletons_4", "clade_size_a_4","clade_size_b_4","clade_size_c_4","clade_size_d_4","clade_size_e_4", "ltt_1", "ltt_2", "ltt_3", "ltt_4", "coal_1", "coal_2", "coal_3")
 
 ##Set up output matrices
-stats.resim=matrix(NA,nrow=nsim_per_job,ncol=number_stats)
-colnames(stats.resim)<-cols_stats
+params.sim=matrix(NA,nrow=nsim_per_job,ncol=number_params)
+colnames(params.sim)<-cols_params
+stats.sim=matrix(NA,nrow=nsim_per_job,ncol=number_stats)
+colnames(stats.sim)<-cols_stats 
 
-
-##Read in sample from posterior distribution (parameter values);
-##Read in sample from posterior predictive distribution (summary stat values);
-##Read in observed data set (summary stat values);
-
-load(input_file_path)
-
-pp_param_table <- as.data.frame(KX003.parameters.ppc)
-
-target_pop_size = pp_param_table$target_pop[pp_sim_index]
-midlife_pop_change = pp_param_table$midlife_pop_change[pp_sim_index]
-latelife_pop_change = pp_param_table$latelife_pop_change[pp_sim_index]
-
-dif1 = ((target_pop_size*midlife_pop_change)-target_pop_size)/15
-dif2 = ((target_pop_size*latelife_pop_change)-(target_pop_size*midlife_pop_change))/10
-param_ID = paste(target_pop_size, midlife_pop_change, latelife_pop_change, sep = "_")
-
-parameters = list(target_pop= target_pop_size, midlife_pop_change = midlife_pop_change, latelife_pop_change= latelife_pop_change)
-print(parameters)
-
-trajectory=data.frame(ts=365*(1:age),target_pop_size=target_pop_size+1*(1:age),division_rate=1/(365))
-trajectory$target_pop_size[change1]=round(trajectory$target_pop_size[14]+(dif1*(1:5)),digits=0)
-trajectory$target_pop_size[midlife]=round(midlife_pop_change*trajectory$target_pop_size[midlife], digits=0)
-trajectory$target_pop_size[change2]=round(trajectory$target_pop_size[50]+(dif2*(1:10)),digits =0)
-trajectory$target_pop_size[latelife]=round(latelife_pop_change*trajectory$target_pop_size[latelife], digits=0)
-print(head(trajectory))
+##Read in accepted parameter values
+load(paste0("/lustre/scratch117/casm/team154/em16/simulations/rsimpop2/",Iteration, "/", ID, "_traj_for_sim_2"))
+traj5 <- as.data.frame(traj5)
 
 ##Setup the trajectory
-for(i in 1:nsim_per_job) {
+for(i in 1:nrow(traj5)) {
   set.seed(run+i)
+  target_pop_size= traj5$target_pop[i]
+  midlife_pop_change = traj5$midlife_pop_change[i]
+  latelife_pop_change = traj5$latelife_pop_change[i]
+  dif1 = ((target_pop_size*midlife_pop_change)-target_pop_size)/5
+  dif2 = ((target_pop_size*latelife_pop_change)-(target_pop_size*midlife_pop_change))/10
+  param_ID = paste(target_pop_size, midlife_pop_change, latelife_pop_change, sep = "_")
+
+  parameters = list(target_pop= target_pop_size, midlife_pop_change = midlife_pop_change, latelife_pop_change= latelife_pop_change)
+  print(parameters)
+  
+  trajectory=data.frame(ts=365*(1:age),target_pop_size=target_pop_size+1*(1:age),division_rate=1/(365))
+  trajectory$target_pop_size[change1]=round(trajectory$target_pop_size[14]+(dif1*(1:5)),digits=0)
+  trajectory$target_pop_size[midlife]=round(midlife_pop_change*trajectory$target_pop_size[midlife], digits=0)
+  trajectory$target_pop_size[change2]=round(trajectory$target_pop_size[50]+(dif2*(1:10)),digits =0)
+  trajectory$target_pop_size[latelife]=round(latelife_pop_change*trajectory$target_pop_size[latelife], digits=0)
+  print(head(trajectory))
   
   ##Run the sim
   sp=run_neutral_trajectory(NULL,0.5,trajectory)
+  
+  ## Visualise the trajectory
+  #pdf(paste0("pdfs/",ID, "_", param_ID, "_trajectory.pdf"))
+  #plot(sp,xlim=c(0,100))
+  #lines(trajectory$ts/365,trajectory$target_pop_size,col="red")
+  #legend("topright",c("Target","Actual"),col=c("red","black"),lwd=1)
+  #dev.off()
   
   ## Get the tree of extant lineages
   fulltree=get_tree_from_simpop(sp)
@@ -103,6 +100,13 @@ for(i in 1:nsim_per_job) {
   mean_muts_sim=mean(get_mut_burden(tree))
   
   tree <- make.ultrametric.tree(tree)
+  
+  ## The plot true-time version of tree
+  #plot_tree(get_elapsed_time_tree(st),cex.label = 0)
+  
+  #pdf(paste0("pdfs/",ID, "_", param_ID, "_tree.pdf"), width =30)
+  #plot_tree(tree,cex.label = 0)
+  #dev.off()
   
   #Define functions needed for summary stats
   get_summary_stats=function(tree,time_points) {
@@ -141,11 +145,20 @@ for(i in 1:nsim_per_job) {
   coal_sim <- get_coalescences(ltt_sim);names(coal_sim)=paste("coal",1:length(coal_sim),sep="_")
   stats_sim = cbind(mean_muts_sim,summary_stats,t(ltt_sim),t(coal_sim))
   
- 
-  stats.resim[i,]<- unlist(stats_sim)
+  params.sim[i,] <- unlist(parameters)
+  stats.sim[i,]<- unlist(stats_sim)
   
- 
+  
 
-} # for(i in 1:nsim_per_job)
+  #plot_tree(get_elapsed_time_tree(st),cex.label = 0)
+  
+    #pdf(paste0("pdfs/",ID, "_", param_ID, "_tree.pdf"), height =30)
+    #plot(tree, show.tip.label = FALSE ); abline(v=stat_time,col="red")
+    #dev.off()
+  
+  write.tree(tree, file = paste0("trees/tree_Model_", ID, "_",param_ID))
 
-save(stats.resim, file = paste0(output_directory,"/summary_stats_pp_sim_", pp_sim_index,"_resim_run_", resim_run_index))
+}
+
+save(stats.sim, file = paste0("summary_stats/summary_stats_run_", run))
+save(params.sim, file = paste0("parameters/parameters_run_", run))

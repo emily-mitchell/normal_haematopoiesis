@@ -1,4 +1,7 @@
 ## Run on farm5
+
+# Author: Emily Mitchell
+
 args = commandArgs(TRUE)
 
 ##SET param_ID AND FILEPATHS
