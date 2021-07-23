@@ -1,0 +1,3 @@
+Input for the benchmarking scripts can be found for each individual on Mendeley Data
+- tree file ('.tree' file)
+- matrix of annotated variants ('annotated_mut' file)
