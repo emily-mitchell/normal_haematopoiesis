@@ -1,0 +1,98 @@
+---
+title: "Lolliplots"
+output: html_document
+author: Margarete Fabre, adapted by Emily Mitchell
+---
+
+Script to make lolliplot figures for variants in DNMT3A, ZNF318 and HIST2H3D.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+suppressMessages(library(Gviz))
+suppressMessages(library(rtracklayer))
+suppressMessages(library(trackViewer))
+suppressMessages(library(dplyr))
+```
+
+
+```{r}
+variants <- read.csv("~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/lolliplots/lolliplot_variants.csv", stringsAsFactors = F)
+variants$score1 <- 1
+variants$color <- as.character(variants$color)
+```
+
+```{r}
+domains <- read.table("~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/lolliplots/domains.txt", stringsAsFactors = F, header = T)
+```
+
+```{r}
+df = variants %>% filter(gene == "DNMT3A")
+  sample.gr <- GRanges("DNMT3A", IRanges(df$pos, width=1))
+  sample.gr$color <- df$color
+  sample.gr$score <- as.numeric(df$score1)
+  sample.gr$SNPsideID <- df$SNPsideID
+ 
+  df2 = domains %>% filter(gene=="DNMT3A")
+  features <- GRanges("DNMT3A", IRanges(df2$start, width=df2$length, names=df2$description))
+  features$fill <- df2$fillColour
+  features$height <- df2$fillHeight
+ 
+  sample.gr.labelSize <- sample.gr
+  sample.gr.labelSize$label.parameter.gp <- gpar(cex=1.4)
+ 
+  xaxis <- c(1, max(df2$stop))
+  yaxis <- c(0, max(df$score))
+
+lolliplot(sample.gr.labelSize, features, xaxis=xaxis, yaxis=yaxis, ylab="Recurrence", dashline.col="white", cex=1)
+
+```
+
+```{r}
+df = variants %>% filter(gene == "ZNF318")
+  sample.gr <- GRanges("ZNF318", IRanges(df$pos, width=1))
+  sample.gr$color <- df$color
+  sample.gr$score <- as.numeric(df$score1)
+  sample.gr$SNPsideID <- df$SNPsideID
+ 
+  df2 = domains %>% filter(gene=="ZNF318")
+  features <- GRanges("ZNF318", IRanges(df2$start, width=df2$length, names=df2$description))
+  features$fill <- df2$fillColour
+  features$height <- df2$fillHeight
+ 
+  sample.gr.labelSize <- sample.gr
+  sample.gr.labelSize$label.parameter.gp <- gpar(cex=1.4)
+ 
+  xaxis <- c(1, max(df2$stop))
+  yaxis <- c(0, max(df$score))
+
+lolliplot(sample.gr.labelSize, features, xaxis=xaxis, yaxis=yaxis, ylab="Recurrence", dashline.col="white", cex=1)
+
+```
+
+```{r}
+df = variants %>% filter(gene == "HIST2H3D")
+  sample.gr <- GRanges("HIST2H3D", IRanges(df$pos, width=1))
+  sample.gr$color <- df$color
+  sample.gr$score <- as.numeric(df$score1)
+  sample.gr$SNPsideID <- df$SNPsideID
+ 
+  df2 = domains %>% filter(gene=="HIST2H3D")
+  features <- GRanges("HIST2H3D", IRanges(df2$start, width=df2$length, names=df2$description))
+  features$fill <- df2$fillColour
+  features$height <- df2$fillHeight
+ 
+  sample.gr.labelSize <- sample.gr
+  sample.gr.labelSize$label.parameter.gp <- gpar(cex=1.4)
+ 
+  xaxis <- c(1, max(df2$stop))
+  yaxis <- c(0, max(df$score))
+
+lolliplot(sample.gr.labelSize, features, xaxis=xaxis, yaxis=yaxis, ylab="Recurrence", dashline.col="white", cex=1)
+
+```
+
+
+

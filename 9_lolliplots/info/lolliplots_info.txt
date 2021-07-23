@@ -1,0 +1,1 @@
+All input for the Lolliplots.Rmd script is in the lolliplots/input/ folder.
