@@ -1,0 +1,763 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# "filters for KX001_4_indels"
+# Author: Emily Mitchell
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/lustre/scratch117/casm/team154/em16/KX001/KX001_4/indels/
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#1.  Copy in pindel files 
+/lustre/scratch117/casm/team154/em16/KX001/KX001_4/indels/	
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+nohup cp /nfs/cancer_ref01/nst_links/live/1882/*/*pindel.annot.vcf.gz . &
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#2. Unzip the pindel files
+/lustre/scratch117/casm/team154/em16/KX001/KX001_4/indels/	
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
+	
+nohup gunzip *gz &
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#3. Run perl script to select PASS flag variants from pindel file
+/lustre/scratch117/casm/team154/em16/KX001/KX001_4/indels/	
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+nohup perl 2016.05.20_filter_pass_indels.pl &
+
+# Use nano to create new file in working directory
+
+
+use strict;
+use warnings;
+
+
+my @file_list = `ls *pindel.annot.vcf`; # choose the files with "pindel.annot.vcf" in the title
+
+print "@file_list \n";
+
+foreach my $file (@file_list) {
+		
+	# open file
+	print "$file";
+	chomp $file;
+	open (my $fh, '<', $file) or die "Can't open $file, $! \n";
+	print "opened file: $file \n";
+  
+    # make an array with all the pass hits in exons/splice sites
+    my @filtered = ();
+    while (my $line = <$fh>) {
+        if ($line =~ (/PASS/)) {
+            #if ($line =~ (/CLPM=0.00/)) {
+                #if ($line =~ (/ASMD=14|ASMD=15/)) {
+                            push @filtered, $line;
+                        
+     #           }
+    #        }
+        }
+    }
+
+	# put all these hits in an output file
+	my $file_out = "$file"."_pass_flags"; # make output file with a name that links it to the input file
+	print "$file_out";
+	open (my $fh_out, '>', "$file_out") or die "Can't open $file_out\n";
+	print $fh_out "$_" for @filtered;
+	close $fh_out;
+}
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+## wc -l *pass_flags
+
+     1065 PD40521aa.pindel.annot.vcf_pass_flags
+     1009 PD40521ab.pindel.annot.vcf_pass_flags
+      897 PD40521ac.pindel.annot.vcf_pass_flags
+     1215 PD40521ad.pindel.annot.vcf_pass_flags
+     1181 PD40521ae.pindel.annot.vcf_pass_flags
+     1255 PD40521af.pindel.annot.vcf_pass_flags
+     1047 PD40521ag.pindel.annot.vcf_pass_flags
+     1077 PD40521ah.pindel.annot.vcf_pass_flags
+     1005 PD40521ai.pindel.annot.vcf_pass_flags
+     1238 PD40521aj.pindel.annot.vcf_pass_flags
+     1307 PD40521ak.pindel.annot.vcf_pass_flags
+     1038 PD40521al.pindel.annot.vcf_pass_flags
+     1135 PD40521am.pindel.annot.vcf_pass_flags
+     1151 PD40521an.pindel.annot.vcf_pass_flags
+     1275 PD40521ao.pindel.annot.vcf_pass_flags
+     1366 PD40521ap.pindel.annot.vcf_pass_flags
+     1045 PD40521aq.pindel.annot.vcf_pass_flags
+     1327 PD40521ar.pindel.annot.vcf_pass_flags
+     1112 PD40521as.pindel.annot.vcf_pass_flags
+      994 PD40521at.pindel.annot.vcf_pass_flags
+     1377 PD40521au.pindel.annot.vcf_pass_flags
+     1198 PD40521av.pindel.annot.vcf_pass_flags
+     1333 PD40521aw.pindel.annot.vcf_pass_flags
+     1062 PD40521ax.pindel.annot.vcf_pass_flags
+     1252 PD40521ay.pindel.annot.vcf_pass_flags
+     1042 PD40521az.pindel.annot.vcf_pass_flags
+     1186 PD40521ba.pindel.annot.vcf_pass_flags
+      960 PD40521bb.pindel.annot.vcf_pass_flags
+     1009 PD40521bc.pindel.annot.vcf_pass_flags
+      952 PD40521bd.pindel.annot.vcf_pass_flags
+      962 PD40521be.pindel.annot.vcf_pass_flags
+     1034 PD40521bf.pindel.annot.vcf_pass_flags
+     1069 PD40521bg.pindel.annot.vcf_pass_flags
+     1362 PD40521bh.pindel.annot.vcf_pass_flags
+     1041 PD40521bi.pindel.annot.vcf_pass_flags
+      981 PD40521bj.pindel.annot.vcf_pass_flags
+     1058 PD40521bk.pindel.annot.vcf_pass_flags
+     1167 PD40521bl.pindel.annot.vcf_pass_flags
+     1101 PD40521bm.pindel.annot.vcf_pass_flags
+     1021 PD40521bn.pindel.annot.vcf_pass_flags
+      935 PD40521bo.pindel.annot.vcf_pass_flags
+     1064 PD40521bp.pindel.annot.vcf_pass_flags
+     1127 PD40521bq.pindel.annot.vcf_pass_flags
+     1084 PD40521br.pindel.annot.vcf_pass_flags
+     1072 PD40521bs.pindel.annot.vcf_pass_flags
+      793 PD40521bt.pindel.annot.vcf_pass_flags
+      983 PD40521bu.pindel.annot.vcf_pass_flags
+     1162 PD40521bv.pindel.annot.vcf_pass_flags
+      896 PD40521bw.pindel.annot.vcf_pass_flags
+      935 PD40521bx.pindel.annot.vcf_pass_flags
+     1012 PD40521by.pindel.annot.vcf_pass_flags
+      957 PD40521bz.pindel.annot.vcf_pass_flags
+      776 PD40521ca.pindel.annot.vcf_pass_flags
+     1285 PD40521cb.pindel.annot.vcf_pass_flags
+     1033 PD40521cc.pindel.annot.vcf_pass_flags
+     1091 PD40521cd.pindel.annot.vcf_pass_flags
+     1295 PD40521ce.pindel.annot.vcf_pass_flags
+      912 PD40521cf.pindel.annot.vcf_pass_flags
+     1342 PD40521cg.pindel.annot.vcf_pass_flags
+      878 PD40521ch.pindel.annot.vcf_pass_flags
+     1059 PD40521ci.pindel.annot.vcf_pass_flags
+      987 PD40521cj.pindel.annot.vcf_pass_flags
+     1259 PD40521ck.pindel.annot.vcf_pass_flags
+     1345 PD40521cl.pindel.annot.vcf_pass_flags
+     1631 PD40521cm.pindel.annot.vcf_pass_flags
+      652 PD40521cn.pindel.annot.vcf_pass_flags
+     1081 PD40521co.pindel.annot.vcf_pass_flags
+     2553 PD40521cp.pindel.annot.vcf_pass_flags
+     2082 PD40521cq.pindel.annot.vcf_pass_flags
+     1862 PD40521cr.pindel.annot.vcf_pass_flags
+     2503 PD40521cs.pindel.annot.vcf_pass_flags
+     1824 PD40521ct.pindel.annot.vcf_pass_flags
+      781 PD40521cu.pindel.annot.vcf_pass_flags
+      840 PD40521cv.pindel.annot.vcf_pass_flags
+     1063 PD40521cw.pindel.annot.vcf_pass_flags
+      965 PD40521cx.pindel.annot.vcf_pass_flags
+     1049 PD40521cy.pindel.annot.vcf_pass_flags
+      919 PD40521cz.pindel.annot.vcf_pass_flags
+     1087 PD40521da.pindel.annot.vcf_pass_flags
+      816 PD40521db.pindel.annot.vcf_pass_flags
+      888 PD40521dc.pindel.annot.vcf_pass_flags
+     1051 PD40521dd.pindel.annot.vcf_pass_flags
+      938 PD40521de.pindel.annot.vcf_pass_flags
+      736 PD40521df.pindel.annot.vcf_pass_flags
+     1226 PD40521dg.pindel.annot.vcf_pass_flags
+     1063 PD40521dh.pindel.annot.vcf_pass_flags
+     1368 PD40521di.pindel.annot.vcf_pass_flags
+     1217 PD40521dj.pindel.annot.vcf_pass_flags
+     1277 PD40521dk.pindel.annot.vcf_pass_flags
+     1008 PD40521dl.pindel.annot.vcf_pass_flags
+     1105 PD40521dm.pindel.annot.vcf_pass_flags
+      898 PD40521dn.pindel.annot.vcf_pass_flags
+     1001 PD40521do.pindel.annot.vcf_pass_flags
+     1120 PD40521dp.pindel.annot.vcf_pass_flags
+     1071 PD40521dq.pindel.annot.vcf_pass_flags
+     1099 PD40521dr.pindel.annot.vcf_pass_flags
+      884 PD40521ds.pindel.annot.vcf_pass_flags
+     1202 PD40521dt.pindel.annot.vcf_pass_flags
+     1025 PD40521du.pindel.annot.vcf_pass_flags
+      946 PD40521dv.pindel.annot.vcf_pass_flags
+      865 PD40521dw.pindel.annot.vcf_pass_flags
+      889 PD40521dx.pindel.annot.vcf_pass_flags
+      809 PD40521dy.pindel.annot.vcf_pass_flags
+     1017 PD40521dz.pindel.annot.vcf_pass_flags
+      983 PD40521ea.pindel.annot.vcf_pass_flags
+      995 PD40521eb.pindel.annot.vcf_pass_flags
+      992 PD40521ec.pindel.annot.vcf_pass_flags
+      908 PD40521ed.pindel.annot.vcf_pass_flags
+      788 PD40521ee.pindel.annot.vcf_pass_flags
+      839 PD40521ef.pindel.annot.vcf_pass_flags
+     1078 PD40521eg.pindel.annot.vcf_pass_flags
+     1080 PD40521eh.pindel.annot.vcf_pass_flags
+      936 PD40521ei.pindel.annot.vcf_pass_flags
+      585 PD40521ej.pindel.annot.vcf_pass_flags
+      767 PD40521ek.pindel.annot.vcf_pass_flags
+     1043 PD40521el.pindel.annot.vcf_pass_flags
+     1096 PD40521em.pindel.annot.vcf_pass_flags
+     1018 PD40521en.pindel.annot.vcf_pass_flags
+      982 PD40521eo.pindel.annot.vcf_pass_flags
+     1181 PD40521ep.pindel.annot.vcf_pass_flags
+      868 PD40521eq.pindel.annot.vcf_pass_flags
+      858 PD40521er.pindel.annot.vcf_pass_flags
+     1017 PD40521es.pindel.annot.vcf_pass_flags
+      602 PD40521et.pindel.annot.vcf_pass_flags
+      828 PD40521eu.pindel.annot.vcf_pass_flags
+      951 PD40521ev.pindel.annot.vcf_pass_flags
+     1107 PD40521ew.pindel.annot.vcf_pass_flags
+     1142 PD40521ex.pindel.annot.vcf_pass_flags
+     1015 PD40521ey.pindel.annot.vcf_pass_flags
+      984 PD40521ez.pindel.annot.vcf_pass_flags
+      920 PD40521fa.pindel.annot.vcf_pass_flags
+      962 PD40521fb.pindel.annot.vcf_pass_flags
+     1000 PD40521fc.pindel.annot.vcf_pass_flags
+     1056 PD40521fd.pindel.annot.vcf_pass_flags
+     1069 PD40521fe.pindel.annot.vcf_pass_flags
+      764 PD40521ff.pindel.annot.vcf_pass_flags
+      913 PD40521fg.pindel.annot.vcf_pass_flags
+      916 PD40521fh.pindel.annot.vcf_pass_flags
+      902 PD40521fi.pindel.annot.vcf_pass_flags
+      900 PD40521fj.pindel.annot.vcf_pass_flags
+      695 PD40521fk.pindel.annot.vcf_pass_flags
+      786 PD40521fl.pindel.annot.vcf_pass_flags
+     1332 PD40521fm.pindel.annot.vcf_pass_flags
+     1126 PD40521fn.pindel.annot.vcf_pass_flags
+      959 PD40521fo.pindel.annot.vcf_pass_flags
+      913 PD40521fp.pindel.annot.vcf_pass_flags
+      839 PD40521fq.pindel.annot.vcf_pass_flags
+      747 PD40521fr.pindel.annot.vcf_pass_flags
+      829 PD40521fs.pindel.annot.vcf_pass_flags
+      899 PD40521ft.pindel.annot.vcf_pass_flags
+     1153 PD40521fu.pindel.annot.vcf_pass_flags
+     1083 PD40521fv.pindel.annot.vcf_pass_flags
+      964 PD40521fw.pindel.annot.vcf_pass_flags
+      794 PD40521fx.pindel.annot.vcf_pass_flags
+      809 PD40521fy.pindel.annot.vcf_pass_flags
+      823 PD40521fz.pindel.annot.vcf_pass_flags
+      873 PD40521ga.pindel.annot.vcf_pass_flags
+      827 PD40521gb.pindel.annot.vcf_pass_flags
+      876 PD40521gc.pindel.annot.vcf_pass_flags
+     1023 PD40521gd.pindel.annot.vcf_pass_flags
+      652 PD40521ge.pindel.annot.vcf_pass_flags
+      586 PD40521gf.pindel.annot.vcf_pass_flags
+      748 PD40521gg.pindel.annot.vcf_pass_flags
+      860 PD40521gh.pindel.annot.vcf_pass_flags
+      878 PD40521gi.pindel.annot.vcf_pass_flags
+      871 PD40521gj.pindel.annot.vcf_pass_flags
+      853 PD40521gk.pindel.annot.vcf_pass_flags
+      909 PD40521gl.pindel.annot.vcf_pass_flags
+      606 PD40521gm.pindel.annot.vcf_pass_flags
+      532 PD40521gn.pindel.annot.vcf_pass_flags
+      860 PD40521go.pindel.annot.vcf_pass_flags
+      258 PD40521gp.pindel.annot.vcf_pass_flags
+      538 PD40521gq.pindel.annot.vcf_pass_flags
+      413 PD40521gr.pindel.annot.vcf_pass_flags
+      331 PD40521gs.pindel.annot.vcf_pass_flags
+     1388 PD40521gt.pindel.annot.vcf_pass_flags
+     1130 PD40521gu.pindel.annot.vcf_pass_flags
+     1180 PD40521gv.pindel.annot.vcf_pass_flags
+      502 PD40521gw.pindel.annot.vcf_pass_flags
+      651 PD40521gx.pindel.annot.vcf_pass_flags
+      681 PD40521gy.pindel.annot.vcf_pass_flags
+      991 PD40521gz.pindel.annot.vcf_pass_flags
+     1763 PD40521ha.pindel.annot.vcf_pass_flags
+     1421 PD40521hb.pindel.annot.vcf_pass_flags
+     1188 PD40521hc.pindel.annot.vcf_pass_flags
+      906 PD40521hd.pindel.annot.vcf_pass_flags
+      294 PD40521he.pindel.annot.vcf_pass_flags
+      662 PD40521hf.pindel.annot.vcf_pass_flags
+      760 PD40521hg.pindel.annot.vcf_pass_flags
+      922 PD40521hh.pindel.annot.vcf_pass_flags
+     1509 PD40521hi.pindel.annot.vcf_pass_flags
+      985 PD40521hj.pindel.annot.vcf_pass_flags
+      765 PD40521hk.pindel.annot.vcf_pass_flags
+      775 PD40521hl.pindel.annot.vcf_pass_flags
+     1128 PD40521hm.pindel.annot.vcf_pass_flags
+      579 PD40521hn.pindel.annot.vcf_pass_flags
+      960 PD40521ho.pindel.annot.vcf_pass_flags
+      635 PD40521hp.pindel.annot.vcf_pass_flags
+      582 PD40521hq.pindel.annot.vcf_pass_flags
+      454 PD40521hr.pindel.annot.vcf_pass_flags
+     1340 PD40521hs.pindel.annot.vcf_pass_flags
+      760 PD40521ht.pindel.annot.vcf_pass_flags
+      748 PD40521hu.pindel.annot.vcf_pass_flags
+      472 PD40521hv.pindel.annot.vcf_pass_flags
+      315 PD40521hw.pindel.annot.vcf_pass_flags
+     1225 PD40521hx.pindel.annot.vcf_pass_flags
+      667 PD40521hy.pindel.annot.vcf_pass_flags
+      878 PD40521hz.pindel.annot.vcf_pass_flags
+     1234 PD40521ia.pindel.annot.vcf_pass_flags
+      629 PD40521ib.pindel.annot.vcf_pass_flags
+      610 PD40521ic.pindel.annot.vcf_pass_flags
+     1423 PD40521id.pindel.annot.vcf_pass_flags
+      340 PD40521ie.pindel.annot.vcf_pass_flags
+     1132 PD40521if.pindel.annot.vcf_pass_flags
+      980 PD40521ig.pindel.annot.vcf_pass_flags
+     1003 PD40521ih.pindel.annot.vcf_pass_flags
+      797 PD40521ii.pindel.annot.vcf_pass_flags
+      436 PD40521ij.pindel.annot.vcf_pass_flags
+     1133 PD40521ik.pindel.annot.vcf_pass_flags
+     1656 PD40521il.pindel.annot.vcf_pass_flags
+      230 PD40521im.pindel.annot.vcf_pass_flags
+      422 PD40521in.pindel.annot.vcf_pass_flags
+     1519 PD40521io.pindel.annot.vcf_pass_flags
+     1108 PD40521ip.pindel.annot.vcf_pass_flags
+      813 PD40521iq.pindel.annot.vcf_pass_flags
+      740 PD40521ir.pindel.annot.vcf_pass_flags
+      480 PD40521is.pindel.annot.vcf_pass_flags
+     1710 PD40521it.pindel.annot.vcf_pass_flags
+     1051 PD40521iu.pindel.annot.vcf_pass_flags
+      652 PD40521iv.pindel.annot.vcf_pass_flags
+     1104 PD40521iw.pindel.annot.vcf_pass_flags
+      719 PD40521ix.pindel.annot.vcf_pass_flags
+      863 PD40521iy.pindel.annot.vcf_pass_flags
+      459 PD40521iz.pindel.annot.vcf_pass_flags
+      592 PD40521ja.pindel.annot.vcf_pass_flags
+      438 PD40521jb.pindel.annot.vcf_pass_flags
+      967 PD40521jc.pindel.annot.vcf_pass_flags
+     1105 PD40521jd.pindel.annot.vcf_pass_flags
+      970 PD40521je.pindel.annot.vcf_pass_flags
+     1312 PD40521jf.pindel.annot.vcf_pass_flags
+      957 PD40521jg.pindel.annot.vcf_pass_flags
+      739 PD40521jh.pindel.annot.vcf_pass_flags
+      908 PD40521ji.pindel.annot.vcf_pass_flags
+      230 PD40521jj.pindel.annot.vcf_pass_flags
+      872 PD40521jk.pindel.annot.vcf_pass_flags
+      638 PD40521jl.pindel.annot.vcf_pass_flags
+     1654 PD40521jm.pindel.annot.vcf_pass_flags
+     1992 PD40521jn.pindel.annot.vcf_pass_flags
+      771 PD40521jo.pindel.annot.vcf_pass_flags
+      916 PD40521jp.pindel.annot.vcf_pass_flags
+      149 PD40521jq.pindel.annot.vcf_pass_flags
+      319 PD40521jr.pindel.annot.vcf_pass_flags
+      653 PD40521js.pindel.annot.vcf_pass_flags
+      308 PD40521jt.pindel.annot.vcf_pass_flags
+      932 PD40521ju.pindel.annot.vcf_pass_flags
+      678 PD40521jv.pindel.annot.vcf_pass_flags
+      673 PD40521jx.pindel.annot.vcf_pass_flags
+      351 PD40521jy.pindel.annot.vcf_pass_flags
+      539 PD40521jz.pindel.annot.vcf_pass_flags
+      358 PD40521ka.pindel.annot.vcf_pass_flags
+      877 PD40521kb.pindel.annot.vcf_pass_flags
+      661 PD40521kc.pindel.annot.vcf_pass_flags
+     1207 PD40521kd.pindel.annot.vcf_pass_flags
+     1223 PD40521ke.pindel.annot.vcf_pass_flags
+     1169 PD40521kf.pindel.annot.vcf_pass_flags
+      946 PD40521kg.pindel.annot.vcf_pass_flags
+      872 PD40521kh.pindel.annot.vcf_pass_flags
+      713 PD40521ki.pindel.annot.vcf_pass_flags
+      973 PD40521kj.pindel.annot.vcf_pass_flags
+      811 PD40521kk.pindel.annot.vcf_pass_flags
+      696 PD40521kl.pindel.annot.vcf_pass_flags
+      987 PD40521km.pindel.annot.vcf_pass_flags
+      899 PD40521kn.pindel.annot.vcf_pass_flags
+      957 PD40521ko.pindel.annot.vcf_pass_flags
+      838 PD40521kp.pindel.annot.vcf_pass_flags
+      841 PD40521kq.pindel.annot.vcf_pass_flags
+     1107 PD40521kr.pindel.annot.vcf_pass_flags
+     1041 PD40521ks.pindel.annot.vcf_pass_flags
+     1139 PD40521kt.pindel.annot.vcf_pass_flags
+     1270 PD40521ku.pindel.annot.vcf_pass_flags
+     1249 PD40521kv.pindel.annot.vcf_pass_flags
+      957 PD40521kw.pindel.annot.vcf_pass_flags
+     1140 PD40521kx.pindel.annot.vcf_pass_flags
+     1039 PD40521ky.pindel.annot.vcf_pass_flags
+     1266 PD40521kz.pindel.annot.vcf_pass_flags
+     1209 PD40521la.pindel.annot.vcf_pass_flags
+      963 PD40521lb.pindel.annot.vcf_pass_flags
+     1162 PD40521lc.pindel.annot.vcf_pass_flags
+      910 PD40521ld.pindel.annot.vcf_pass_flags
+     1058 PD40521le.pindel.annot.vcf_pass_flags
+      984 PD40521lf.pindel.annot.vcf_pass_flags
+     1052 PD40521lg.pindel.annot.vcf_pass_flags
+     1096 PD40521lh.pindel.annot.vcf_pass_flags
+      836 PD40521li.pindel.annot.vcf_pass_flags
+      925 PD40521lj.pindel.annot.vcf_pass_flags
+      790 PD40521lk.pindel.annot.vcf_pass_flags
+      942 PD40521ll.pindel.annot.vcf_pass_flags
+      937 PD40521lm.pindel.annot.vcf_pass_flags
+      890 PD40521ln.pindel.annot.vcf_pass_flags
+      913 PD40521lo.pindel.annot.vcf_pass_flags
+      802 PD40521lp.pindel.annot.vcf_pass_flags
+     1196 PD40521lq.pindel.annot.vcf_pass_flags
+      819 PD40521lr.pindel.annot.vcf_pass_flags
+      875 PD40521ls.pindel.annot.vcf_pass_flags
+      959 PD40521lt.pindel.annot.vcf_pass_flags
+      689 PD40521lu.pindel.annot.vcf_pass_flags
+      801 PD40521lv.pindel.annot.vcf_pass_flags
+      819 PD40521lw.pindel.annot.vcf_pass_flags
+      876 PD40521lx.pindel.annot.vcf_pass_flags
+      934 PD40521ly.pindel.annot.vcf_pass_flags
+     1005 PD40521lz.pindel.annot.vcf_pass_flags
+     1136 PD40521ma.pindel.annot.vcf_pass_flags
+     1045 PD40521mb.pindel.annot.vcf_pass_flags
+      673 PD40521mc.pindel.annot.vcf_pass_flags
+      845 PD40521md.pindel.annot.vcf_pass_flags
+     1028 PD40521me.pindel.annot.vcf_pass_flags
+      949 PD40521mf.pindel.annot.vcf_pass_flags
+      549 PD40521mg.pindel.annot.vcf_pass_flags
+     1172 PD40521mh.pindel.annot.vcf_pass_flags
+      857 PD40521mi.pindel.annot.vcf_pass_flags
+     1448 PD40521mj.pindel.annot.vcf_pass_flags
+     1020 PD40521mk.pindel.annot.vcf_pass_flags
+      747 PD40521ml.pindel.annot.vcf_pass_flags
+      843 PD40521mm.pindel.annot.vcf_pass_flags
+      834 PD40521mn.pindel.annot.vcf_pass_flags
+      987 PD40521mo.pindel.annot.vcf_pass_flags
+      716 PD40521mp.pindel.annot.vcf_pass_flags
+      724 PD40521mq.pindel.annot.vcf_pass_flags
+     1136 PD40521mr.pindel.annot.vcf_pass_flags
+      677 PD40521ms.pindel.annot.vcf_pass_flags
+      780 PD40521mt.pindel.annot.vcf_pass_flags
+     1022 PD40521mu.pindel.annot.vcf_pass_flags
+      871 PD40521mv.pindel.annot.vcf_pass_flags
+     1079 PD40521mw.pindel.annot.vcf_pass_flags
+     1408 PD40521mx.pindel.annot.vcf_pass_flags
+      994 PD40521my.pindel.annot.vcf_pass_flags
+     1170 PD40521mz.pindel.annot.vcf_pass_flags
+     1188 PD40521na.pindel.annot.vcf_pass_flags
+      658 PD40521nb.pindel.annot.vcf_pass_flags
+      628 PD40521nc.pindel.annot.vcf_pass_flags
+      872 PD40521nd.pindel.annot.vcf_pass_flags
+      802 PD40521ne.pindel.annot.vcf_pass_flags
+      832 PD40521nf.pindel.annot.vcf_pass_flags
+     1529 PD40521ng.pindel.annot.vcf_pass_flags
+     1130 PD40521nh.pindel.annot.vcf_pass_flags
+      813 PD40521ni.pindel.annot.vcf_pass_flags
+     1081 PD40521nj.pindel.annot.vcf_pass_flags
+      643 PD40521nk.pindel.annot.vcf_pass_flags
+      943 PD40521nl.pindel.annot.vcf_pass_flags
+      749 PD40521nm.pindel.annot.vcf_pass_flags
+      711 PD40521nn.pindel.annot.vcf_pass_flags
+      681 PD40521no.pindel.annot.vcf_pass_flags
+     2601 PD40521n.pindel.annot.vcf_pass_flags
+      960 PD40521np.pindel.annot.vcf_pass_flags
+      739 PD40521nq.pindel.annot.vcf_pass_flags
+      734 PD40521nr.pindel.annot.vcf_pass_flags
+     1060 PD40521ns.pindel.annot.vcf_pass_flags
+      793 PD40521nt.pindel.annot.vcf_pass_flags
+      700 PD40521nu.pindel.annot.vcf_pass_flags
+     1004 PD40521nv.pindel.annot.vcf_pass_flags
+      636 PD40521nw.pindel.annot.vcf_pass_flags
+      824 PD40521nx.pindel.annot.vcf_pass_flags
+      961 PD40521ny.pindel.annot.vcf_pass_flags
+     1086 PD40521nz.pindel.annot.vcf_pass_flags
+     1020 PD40521oa.pindel.annot.vcf_pass_flags
+     1423 PD40521ob.pindel.annot.vcf_pass_flags
+      895 PD40521oc.pindel.annot.vcf_pass_flags
+     1031 PD40521od.pindel.annot.vcf_pass_flags
+     1021 PD40521oe.pindel.annot.vcf_pass_flags
+      509 PD40521of.pindel.annot.vcf_pass_flags
+      838 PD40521og.pindel.annot.vcf_pass_flags
+     2732 PD40521o.pindel.annot.vcf_pass_flags
+     2536 PD40521p.pindel.annot.vcf_pass_flags
+     2785 PD40521q.pindel.annot.vcf_pass_flags
+     3139 PD40521r.pindel.annot.vcf_pass_flags
+     2571 PD40521s.pindel.annot.vcf_pass_flags
+     2853 PD40521t.pindel.annot.vcf_pass_flags
+     2518 PD40521u.pindel.annot.vcf_pass_flags
+     2696 PD40521v.pindel.annot.vcf_pass_flags
+     3143 PD40521w.pindel.annot.vcf_pass_flags
+     1873 PD40521wt.pindel.annot.vcf_pass_flags
+     1431 PD40521wu.pindel.annot.vcf_pass_flags
+     4012 PD40521wv.pindel.annot.vcf_pass_flags
+     2747 PD40521ww.pindel.annot.vcf_pass_flags
+     3653 PD40521wx.pindel.annot.vcf_pass_flags
+     3331 PD40521wy.pindel.annot.vcf_pass_flags
+     4244 PD40521wz.pindel.annot.vcf_pass_flags
+     2470 PD40521xa.pindel.annot.vcf_pass_flags
+     5734 PD40521xb.pindel.annot.vcf_pass_flags
+     2523 PD40521xc.pindel.annot.vcf_pass_flags
+     4989 PD40521xd.pindel.annot.vcf_pass_flags
+     2691 PD40521xe.pindel.annot.vcf_pass_flags
+     2256 PD40521xf.pindel.annot.vcf_pass_flags
+     2207 PD40521xg.pindel.annot.vcf_pass_flags
+     1703 PD40521xh.pindel.annot.vcf_pass_flags
+     1562 PD40521xi.pindel.annot.vcf_pass_flags
+     1522 PD40521xj.pindel.annot.vcf_pass_flags
+     2783 PD40521xk.pindel.annot.vcf_pass_flags
+     1505 PD40521xl.pindel.annot.vcf_pass_flags
+     3226 PD40521xm.pindel.annot.vcf_pass_flags
+     3466 PD40521xn.pindel.annot.vcf_pass_flags
+     5074 PD40521xo.pindel.annot.vcf_pass_flags
+     1288 PD40521x.pindel.annot.vcf_pass_flags
+      706 PD40521xp.pindel.annot.vcf_pass_flags
+     2226 PD40521xq.pindel.annot.vcf_pass_flags
+      879 PD40521xr.pindel.annot.vcf_pass_flags
+     1412 PD40521y.pindel.annot.vcf_pass_flags
+      963 PD40521z.pindel.annot.vcf_pass_flags
+   454943 total
+
+# 408 files total
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 3. Get one long bed file of all the indels, copy to new directory, create output file 
+cgpfarm
+/lustre/scratch117/casm/team154/em16/KX001/KX001_4/indels/	
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+cut -f 1,2,4,5 *pindel.annot.vcf_pass_flags | sort | uniq > KX001_4_filtered_indels.bed
+grep -v "#" KX001_4_filtered_indels.bed > KX001_4_filtered_indels_no#.bed # remove lines starting with "#"
+mv KX001_4_filtered_indels_no#.bed KX001_4_filtered_indels.bed
+
+#19513 KX001_4_filtered_indels.bed
+                     
+mkdir output
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 4. Run cgpVAF script to create cgpVAF commands that are split per chromosome  
+        Farm5
+        /lustre/scratch117/casm/team154/em16/KX001/KX001_4/indels/	
+        Creates: cgpVafChr.cmd (commands split per chr) cgpVafConcat.cmd (commands to concatenate split output) run_bsub.sh (script to set off commands in first two files)
+farm4
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+module load cgpVAFcommand
+
+createVafCmd.pl -pid 1882  -o output -g /lustre/scratch119/casm/team78pipelines/reference/human/GRCh37d5/genome.fa -hdr /lustre/scratch119/casm/team78pipelines/reference/human/GRCh37d5/shared/ucscHiDepth_0.01_mrg1000_no_exon_coreChrs.bed.gz -mq 30  -bo 1  -b KX001_4_filtered_indels.bed
+                                               
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 5. Modify config.ini file (in output directory) to have approx 10 bams per job (splits by bams as well as by chr)  
+	/lustre/scratch117/casm/team154/em16/KX001/KX001_4/indels/output/
+farm3
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+[1882]
+PDv37is_UNM1= <<EOT
+PD40521n
+PD40521wt
+PD40521xc
+PD40521xd
+PD40521xe
+PD40521xf
+PD40521xg
+PD40521xh
+PD40521xi
+PD40521xj
+EOT
+PDv37is_UNM2= <<EOT
+PD40521xk
+PD40521xl
+PD40521wu
+PD40521xm
+PD40521xn
+PD40521xo
+PD40521xp
+PD40521xq
+PD40521xr
+PD40521wv
+EOT
+PDv37is_UNM3= <<EOT
+PD40521ww
+PD40521wx
+PD40521wy
+PD40521wz
+PD40521xa
+PD40521xb
+PD40521w
+PD40521di
+PD40521dj
+PD40521dk
+EOT
+PDv37is_UNM4= <<EOT
+PD40521dl
+etc
+
+[UserData]
+bedfile=KX001_4_filtered_indels.bed
+
+[genome_build]
+genome=human
+build=GRCh37d5
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 6. Save .ini file as 1882_cgpVafConfig.ini and run following command to create amended split commands  
+cgpfarm
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+createVafCmd.pl -pid 1882 -o output -i output/1882_cgpVafConfig.ini -g /lustre/scratch119/casm/team78pipelines/reference/human/GRCh37d5/genome.fa -hdr /lustre/scratch119/casm/team78pipelines/reference/human/GRCh37d5/shared/ucscHiDepth_0.01_mrg1000_no_exon_coreChrs.bed.gz -mq 30  -bo 1  -b KX001_4_filtered_indels.bed
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 7. Edit run_bsub.sh command to increase memory and use long queue 
+            run_bsub.sh command sets off jobs in cgpVafChr.cmd file that has been created
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+set -e;
+set -o pipefail;
+                                               
+jobid=`bsub -oo cgpvaf%I.log -q long -J 'batchjobs[1-984]%5' -n 1 -R 'select[mem>=8000] span[hosts=1] rusage[mem=8000]' -M8000 '/software/$tware/CGP/projects/cgpVAFcommand/perl/bin/farm_idx_exec.pl cgpVafChr.cmd $LSB_JOBINDEX' |  perl -ane '($id)=$_=~/Job\s+<(\d+)>.*/; print$id'`
+                                               
+bsub -w -oo concat%I.log -q normal -J 'batchjobs[41]%41' -n 1 -R 'select[mem>=1000] span[hosts=1] rusage[mem=1000]' -M1000 '/software/CGP/projects/cgpVAFcommand/perl/bin/farm_idx_exec.pl cgpVafConcat.cmd $LSB_JOBINDEX'
+                                
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 8. Run run_bsub.sh command   (050919)
+	/lustre/scratch117/casm/team154/em16/KX001/KX001_4/indels/
+cgpfarm
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+bash run_bsub.sh
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 9. Check output /lustre/scratch117/casm/team154/em16/KX001/KX001_4/indels/output/output/PDv37is/indel
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+PDv37is_PD40521aa_indel_vaf.tsv		PDv37is_PD40521hq_indel_vaf.vcf.gz
+PDv37is_PD40521aa_indel_vaf.vcf		PDv37is_PD40521hq_indel_vaf.vcf.gz.tbi
+PDv37is_PD40521aa_indel_vaf.vcf.gz	PDv37is_PD40521ia_indel_vaf.tsv
+PDv37is_PD40521aa_indel_vaf.vcf.gz.tbi	PDv37is_PD40521ia_indel_vaf.vcf
+PDv37is_PD40521al_indel_vaf.tsv		PDv37is_PD40521ia_indel_vaf.vcf.gz
+PDv37is_PD40521al_indel_vaf.vcf		PDv37is_PD40521ia_indel_vaf.vcf.gz.tbi
+PDv37is_PD40521al_indel_vaf.vcf.gz	PDv37is_PD40521ij_indel_vaf.tsv
+PDv37is_PD40521al_indel_vaf.vcf.gz.tbi	PDv37is_PD40521ij_indel_vaf.vcf
+PDv37is_PD40521av_indel_vaf.tsv		PDv37is_PD40521ij_indel_vaf.vcf.gz
+PDv37is_PD40521av_indel_vaf.vcf		PDv37is_PD40521ij_indel_vaf.vcf.gz.tbi
+PDv37is_PD40521av_indel_vaf.vcf.gz	PDv37is_PD40521is_indel_vaf.tsv
+PDv37is_PD40521av_indel_vaf.vcf.gz.tbi	PDv37is_PD40521is_indel_vaf.vcf
+PDv37is_PD40521bj_indel_vaf.tsv		PDv37is_PD40521is_indel_vaf.vcf.gz
+PDv37is_PD40521bj_indel_vaf.vcf		PDv37is_PD40521is_indel_vaf.vcf.gz.tbi
+PDv37is_PD40521bj_indel_vaf.vcf.gz	PDv37is_PD40521jl_indel_vaf.tsv
+PDv37is_PD40521bj_indel_vaf.vcf.gz.tbi	PDv37is_PD40521jl_indel_vaf.vcf
+PDv37is_PD40521bs_indel_vaf.tsv		PDv37is_PD40521jl_indel_vaf.vcf.gz
+PDv37is_PD40521bs_indel_vaf.vcf		PDv37is_PD40521jl_indel_vaf.vcf.gz.tbi
+PDv37is_PD40521bs_indel_vaf.vcf.gz	PDv37is_PD40521ju_indel_vaf.tsv
+PDv37is_PD40521bs_indel_vaf.vcf.gz.tbi	PDv37is_PD40521ju_indel_vaf.vcf
+PDv37is_PD40521cb_indel_vaf.tsv		PDv37is_PD40521ju_indel_vaf.vcf.gz
+PDv37is_PD40521cb_indel_vaf.vcf		PDv37is_PD40521ju_indel_vaf.vcf.gz.tbi
+PDv37is_PD40521cb_indel_vaf.vcf.gz	PDv37is_PD40521ke_indel_vaf.tsv
+PDv37is_PD40521cb_indel_vaf.vcf.gz.tbi	PDv37is_PD40521ke_indel_vaf.vcf
+PDv37is_PD40521ck_indel_vaf.tsv		PDv37is_PD40521ke_indel_vaf.vcf.gz
+PDv37is_PD40521ck_indel_vaf.vcf		PDv37is_PD40521ke_indel_vaf.vcf.gz.tbi
+PDv37is_PD40521ck_indel_vaf.vcf.gz	PDv37is_PD40521kn_indel_vaf.tsv
+PDv37is_PD40521ck_indel_vaf.vcf.gz.tbi	PDv37is_PD40521kn_indel_vaf.vcf
+PDv37is_PD40521ct_indel_vaf.tsv		PDv37is_PD40521kn_indel_vaf.vcf.gz
+PDv37is_PD40521ct_indel_vaf.vcf		PDv37is_PD40521kn_indel_vaf.vcf.gz.tbi
+PDv37is_PD40521ct_indel_vaf.vcf.gz	PDv37is_PD40521kw_indel_vaf.tsv
+PDv37is_PD40521ct_indel_vaf.vcf.gz.tbi	PDv37is_PD40521kw_indel_vaf.vcf
+PDv37is_PD40521dc_indel_vaf.tsv		PDv37is_PD40521kw_indel_vaf.vcf.gz
+PDv37is_PD40521dc_indel_vaf.vcf		PDv37is_PD40521kw_indel_vaf.vcf.gz.tbi
+PDv37is_PD40521dc_indel_vaf.vcf.gz	PDv37is_PD40521le_indel_vaf.tsv
+PDv37is_PD40521dc_indel_vaf.vcf.gz.tbi	PDv37is_PD40521le_indel_vaf.vcf
+PDv37is_PD40521dl_indel_vaf.tsv		PDv37is_PD40521le_indel_vaf.vcf.gz
+PDv37is_PD40521dl_indel_vaf.vcf		PDv37is_PD40521le_indel_vaf.vcf.gz.tbi
+PDv37is_PD40521dl_indel_vaf.vcf.gz	PDv37is_PD40521ln_indel_vaf.tsv
+PDv37is_PD40521dl_indel_vaf.vcf.gz.tbi	PDv37is_PD40521ln_indel_vaf.vcf
+PDv37is_PD40521du_indel_vaf.tsv		PDv37is_PD40521ln_indel_vaf.vcf.gz
+PDv37is_PD40521du_indel_vaf.vcf		PDv37is_PD40521ln_indel_vaf.vcf.gz.tbi
+PDv37is_PD40521du_indel_vaf.vcf.gz	PDv37is_PD40521lw_indel_vaf.tsv
+PDv37is_PD40521du_indel_vaf.vcf.gz.tbi	PDv37is_PD40521lw_indel_vaf.vcf
+PDv37is_PD40521ed_indel_vaf.tsv		PDv37is_PD40521lw_indel_vaf.vcf.gz
+PDv37is_PD40521ed_indel_vaf.vcf		PDv37is_PD40521lw_indel_vaf.vcf.gz.tbi
+PDv37is_PD40521ed_indel_vaf.vcf.gz	PDv37is_PD40521mf_indel_vaf.tsv
+PDv37is_PD40521ed_indel_vaf.vcf.gz.tbi	PDv37is_PD40521mf_indel_vaf.vcf
+PDv37is_PD40521em_indel_vaf.tsv		PDv37is_PD40521mf_indel_vaf.vcf.gz
+PDv37is_PD40521em_indel_vaf.vcf		PDv37is_PD40521mf_indel_vaf.vcf.gz.tbi
+PDv37is_PD40521em_indel_vaf.vcf.gz	PDv37is_PD40521mo_indel_vaf.tsv
+PDv37is_PD40521em_indel_vaf.vcf.gz.tbi	PDv37is_PD40521mo_indel_vaf.vcf
+PDv37is_PD40521ff_indel_vaf.tsv		PDv37is_PD40521mo_indel_vaf.vcf.gz
+PDv37is_PD40521ff_indel_vaf.vcf		PDv37is_PD40521mo_indel_vaf.vcf.gz.tbi
+PDv37is_PD40521ff_indel_vaf.vcf.gz	PDv37is_PD40521nh_indel_vaf.tsv
+PDv37is_PD40521ff_indel_vaf.vcf.gz.tbi	PDv37is_PD40521nh_indel_vaf.vcf
+PDv37is_PD40521fo_indel_vaf.tsv		PDv37is_PD40521nh_indel_vaf.vcf.gz
+PDv37is_PD40521fo_indel_vaf.vcf		PDv37is_PD40521nh_indel_vaf.vcf.gz.tbi
+PDv37is_PD40521fo_indel_vaf.vcf.gz	PDv37is_PD40521n_indel_vaf.tsv
+PDv37is_PD40521fo_indel_vaf.vcf.gz.tbi	PDv37is_PD40521n_indel_vaf.vcf
+PDv37is_PD40521fx_indel_vaf.tsv		PDv37is_PD40521n_indel_vaf.vcf.gz
+PDv37is_PD40521fx_indel_vaf.vcf		PDv37is_PD40521n_indel_vaf.vcf.gz.tbi
+PDv37is_PD40521fx_indel_vaf.vcf.gz	PDv37is_PD40521nq_indel_vaf.tsv
+PDv37is_PD40521fx_indel_vaf.vcf.gz.tbi	PDv37is_PD40521nq_indel_vaf.vcf
+PDv37is_PD40521gg_indel_vaf.tsv		PDv37is_PD40521nq_indel_vaf.vcf.gz
+PDv37is_PD40521gg_indel_vaf.vcf		PDv37is_PD40521nq_indel_vaf.vcf.gz.tbi
+PDv37is_PD40521gg_indel_vaf.vcf.gz	PDv37is_PD40521nz_indel_vaf.tsv
+PDv37is_PD40521gg_indel_vaf.vcf.gz.tbi	PDv37is_PD40521nz_indel_vaf.vcf
+PDv37is_PD40521gp_indel_vaf.tsv		PDv37is_PD40521nz_indel_vaf.vcf.gz
+PDv37is_PD40521gp_indel_vaf.vcf		PDv37is_PD40521nz_indel_vaf.vcf.gz.tbi
+PDv37is_PD40521gp_indel_vaf.vcf.gz	PDv37is_PD40521q_indel_vaf.tsv
+PDv37is_PD40521gp_indel_vaf.vcf.gz.tbi	PDv37is_PD40521q_indel_vaf.vcf
+PDv37is_PD40521gz_indel_vaf.tsv		PDv37is_PD40521q_indel_vaf.vcf.gz
+PDv37is_PD40521gz_indel_vaf.vcf		PDv37is_PD40521q_indel_vaf.vcf.gz.tbi
+PDv37is_PD40521gz_indel_vaf.vcf.gz	PDv37is_PD40521ww_indel_vaf.tsv
+PDv37is_PD40521gz_indel_vaf.vcf.gz.tbi	PDv37is_PD40521ww_indel_vaf.vcf
+PDv37is_PD40521hh_indel_vaf.tsv		PDv37is_PD40521ww_indel_vaf.vcf.gz
+PDv37is_PD40521hh_indel_vaf.vcf		PDv37is_PD40521ww_indel_vaf.vcf.gz.tbi
+PDv37is_PD40521hh_indel_vaf.vcf.gz	PDv37is_PD40521xk_indel_vaf.tsv
+PDv37is_PD40521hh_indel_vaf.vcf.gz.tbi	PDv37is_PD40521xk_indel_vaf.vcf
+PDv37is_PD40521hq_indel_vaf.tsv		PDv37is_PD40521xk_indel_vaf.vcf.gz
+PDv37is_PD40521hq_indel_vaf.vcf		PDv37is_PD40521xk_indel_vaf.vcf.gz.tbi
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 10.  Remove extra lines in headers of vaf.tsv files with more than 10 bam files
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Ensure headers are the same length
+wc -l *_vaf.tsv
+
+    19561 PDv37is_PD40521aa_indel_vaf.tsv
+    19561 PDv37is_PD40521al_indel_vaf.tsv
+    19561 PDv37is_PD40521av_indel_vaf.tsv
+    19561 PDv37is_PD40521bj_indel_vaf.tsv
+    19561 PDv37is_PD40521bs_indel_vaf.tsv
+    19561 PDv37is_PD40521cb_indel_vaf.tsv
+    19561 PDv37is_PD40521ck_indel_vaf.tsv
+    19561 PDv37is_PD40521ct_indel_vaf.tsv
+    19557 PDv37is_PD40521dc_indel_vaf.tsv
+    19561 PDv37is_PD40521dl_indel_vaf.tsv
+    19561 PDv37is_PD40521du_indel_vaf.tsv
+    19561 PDv37is_PD40521ed_indel_vaf.tsv
+    19561 PDv37is_PD40521em_indel_vaf.tsv
+    19561 PDv37is_PD40521ff_indel_vaf.tsv
+    19561 PDv37is_PD40521fo_indel_vaf.tsv
+    19561 PDv37is_PD40521fx_indel_vaf.tsv
+    19561 PDv37is_PD40521gg_indel_vaf.tsv
+    19561 PDv37is_PD40521gp_indel_vaf.tsv
+    19561 PDv37is_PD40521gz_indel_vaf.tsv
+    19561 PDv37is_PD40521hh_indel_vaf.tsv
+    19562 PDv37is_PD40521hq_indel_vaf.tsv
+    19561 PDv37is_PD40521ia_indel_vaf.tsv
+    19561 PDv37is_PD40521ij_indel_vaf.tsv
+    19561 PDv37is_PD40521is_indel_vaf.tsv
+    19561 PDv37is_PD40521jl_indel_vaf.tsv
+    19561 PDv37is_PD40521ju_indel_vaf.tsv
+    19561 PDv37is_PD40521ke_indel_vaf.tsv
+    19561 PDv37is_PD40521kn_indel_vaf.tsv
+    19561 PDv37is_PD40521kw_indel_vaf.tsv
+    19561 PDv37is_PD40521le_indel_vaf.tsv
+    19561 PDv37is_PD40521ln_indel_vaf.tsv
+    19561 PDv37is_PD40521lw_indel_vaf.tsv
+    19561 PDv37is_PD40521mf_indel_vaf.tsv
+    19561 PDv37is_PD40521mo_indel_vaf.tsv
+    19561 PDv37is_PD40521nh_indel_vaf.tsv
+    19561 PDv37is_PD40521n_indel_vaf.tsv
+    19561 PDv37is_PD40521nq_indel_vaf.tsv
+    19561 PDv37is_PD40521nz_indel_vaf.tsv
+    19561 PDv37is_PD40521q_indel_vaf.tsv
+    19561 PDv37is_PD40521ww_indel_vaf.tsv
+    19561 PDv37is_PD40521xk_indel_vaf.tsv
+   801998 total
+
+
+ls *_vaf.tsv > files
+
+for i in {1..41}
+do grep -v "##" $(sed -n $i'p' files) > tsv$i
+done
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# 11. Cut columns of interest to new files: Chrom Pos Ref Alt then MTR DEP for all samplesq 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Create list of files of interest in list saved as 'files'
+ls tsv* > tsv_files
+
+#for first file
+cut -f 3,4,5,6,25,27,34,36,43,45,52,54,61,63,70,72,79,81,88,90,97,99,106,108,115,117 $(sed -n '1p' tsv_files) > output1   #Chr, Pos, Ref, Alt, + MTR, DEP for all samples (max 11 samples in one file)
+
+#for subsequent files (exclude Chr, Pos, Ref, Alt and PDv37is)
+for i in {2..41}
+do
+cut -f 25,27,34,36,43,45,52,54,61,63,70,72,79,81,88,90,97,99,106,108,115,117 $(sed -n $i'p' tsv_files) >  output$i
+done
+
+
+#Concatenate output files to one merged file
+
+paste output* > KX001_4_indel_filtered_merged_cut.tsv
+
+#19514 KX001_4_indel_filtered_merged_cut.tsv
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#Continue analysis in SNV filtering workflow
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+

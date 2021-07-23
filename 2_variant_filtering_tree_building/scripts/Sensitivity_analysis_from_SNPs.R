@@ -1,4 +1,7 @@
 #!/software/R-3.6.1/bin/Rscript
+
+# Author: Mike Spencer Chapman
+
 library(optparse)
 library(data.table)
 

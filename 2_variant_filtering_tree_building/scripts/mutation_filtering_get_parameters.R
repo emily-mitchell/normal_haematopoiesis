@@ -1,10 +1,16 @@
+#Set up matrices with information about each variant 
+#This script is submitted to the Sanger farm
+#Allows subsequent filtering of variants using the "filtering_from_table_tree" scripts
+
+#Author: Mike Spencer Chapman
+
 #!/software/R-3.6.1/bin/Rscript
 library(stringr)
 library(seqinr)
 library(optparse)
 library(parallel)
 
-source("/lustre/scratch117/casm/team154/em16/R_scripts/functions/foetal.filters.parallel.R") #This should be point to whereever this script is saved
+source("/lustre/scratch117/casm/team154/em16/R_scripts/functions/filters_parallel_functions.R") #This should point to where ever this script is saved
 
 #Specify options to parse from the command line
 option_list = list(
