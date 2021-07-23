@@ -1,0 +1,5 @@
+# Input files for KX003_5_tree_cut_analysis.Rmd and KX003_5_tree_cut_final.Rmd are in the phylogeny_analysis/input folder or available on Mendeley data (alongside the equivalent files for the other individuals).
+
+# KX003_5_tree_cut_analysis.Rmd includes scripts to adjust branch length for coverage, make trees ultra metric and run the phylodyn analysis. It also creates trees annotated with a range of variants (chip drivers, DnDs top hits and cancer drivers).
+
+# KX003_5_tree_cut_final.Rmd creates the trees as illustrated in Figures 2 and 4.
