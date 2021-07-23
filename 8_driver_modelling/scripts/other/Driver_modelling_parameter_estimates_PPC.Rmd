@@ -1,0 +1,130 @@
+---
+title: "Driver modelling parameter estimates"
+output: html_document
+author: Emily Mitchell
+---
+
+### Summary
+
+Script to explore the posterior distributions of parameter estimates derived from population modelling incorporating driver mutations.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+suppressMessages(library(ggplot2))
+```
+
+```{r}
+data <- read.csv("~/Documents/PhD/Sequencing_results/DNA_seq/XX_summary/driver_modelling/PPC_output/data/Hierarchical_ABC_tol_0.02.csv", stringsAsFactors = FALSE)
+```
+
+```{r}
+dens_drivers <- density(data[,"number_drivers_per_year"])
+dens_rate <- density(data[,"gamma_rate"])
+dens_shape <- density(data[,"gamma_shape"])
+
+peak_drivers = dens_drivers$x[which.max(dens_drivers$y)]
+peak_rate = dens_rate$x[which.max(dens_rate$y)]
+peak_shape = dens_shape$x[which.max(dens_shape$y)]
+
+drivers_result_95CI=quantile(data[,"number_drivers_per_year"],probs=c(0.025,0.975))
+rate_result_95CI=quantile(data[,"gamma_rate"],probs=c(0.025,0.975))
+shape_result_95CI=quantile(data[,"gamma_shape"],probs=c(0.025,0.975))
+```
+
+```{r}
+#Print peak values
+peak_drivers
+```
+
+```{r}
+#Print peak values
+peak_rate
+```
+
+```{r}
+#Print peak values
+peak_shape
+```
+
+```{r}
+#Print 95 CI values
+drivers_result_95CI
+```
+
+```{r}
+#Print 95 CI values
+rate_result_95CI
+```
+
+```{r}
+#Print 95 CI values
+shape_result_95CI
+```
+
+
+```{r}
+ggplot(data, aes(x=number_drivers_per_year)) + geom_density()+ theme_classic()+
+    theme(axis.text.x = element_text(size=16), axis.text.y = element_text(size=16),axis.title.x = element_text(size=24),axis.title.y = element_text(size=24))
+```
+
+```{r}
+ggplot(data, aes(x=gamma_shape)) + geom_density() + theme_classic()+
+    theme(axis.text.x = element_text(size=16), axis.text.y = element_text(size=16),axis.title.x = element_text(size=24),axis.title.y = element_text(size=24))
+```
+
+```{r}
+ggplot(data, aes(x= gamma_rate)) + geom_density() + theme_classic()+
+    theme(axis.text.x = element_text(size=16), axis.text.y = element_text(size=16),axis.title.x = element_text(size=24),axis.title.y = element_text(size=24))
+```
+
+```{r}
+ggplot(data, aes(x= gamma_rate, y = number_drivers_per_year)) + geom_density_2d() + theme_classic()+
+    theme(axis.text.x = element_text(size=16), axis.text.y = element_text(size=16),axis.title.x = element_text(size=24),axis.title.y = element_text(size=24))
+```
+
+```{r}
+ggplot(data, aes(x= gamma_shape, y = number_drivers_per_year)) + geom_density_2d() + theme_classic()+
+    theme(axis.text.x = element_text(size=16), axis.text.y = element_text(size=16),axis.title.x = element_text(size=24),axis.title.y = element_text(size=24))
+```
+
+
+```{r}
+ggplot(data, aes(x= gamma_shape, y = gamma_rate)) + geom_density_2d() + theme_classic() +
+    theme(axis.text.x = element_text(size=16), axis.text.y = element_text(size=16),axis.title.x = element_text(size=24),axis.title.y = element_text(size=24))
+```
+
+
+### Creating plot of gamma distribution with 95CI
+```{r}
+sel_coeff <- seq(from = 0.05, to = 0.35, by = 0.001)
+
+sel <- matrix(NA, nrow = length(data$number_drivers_per_year), ncol = 301)
+colnames(sel) <- sel_coeff
+
+#data <- cbind(data, sel)
+
+for (i in sel_coeff) {
+  sel[,as.character(i)] <- dgamma(i, shape = data$gamma_shape, rate = data$gamma_rate)
+}
+med <- apply(sel, 2, median)
+qu <- apply(sel, 2, function(x) quantile(x, probs=c(0.025,0.975)))
+plot(names(med), med, pch=19, cex=.2, xlim = c(0.05,0.3), ylab = "Density", xlab = "Fitness effect (%)") #ylim=c(0,max(qu)))
+polygon(as.numeric(c(colnames(qu), rev(colnames(qu)))), c(qu[1,], rev(qu[2,])), col="grey", border=NA)
+lines(names(med), med)
+#segments(as.numeric(colnames(qu)), qu[1,], as.numeric(colnames(qu)), qu[2,], col="grey", lwd=0.4)
+```
+
+
+```{r}
+ggplot(data, aes(x=number_drivers_per_year)) + geom_density() + theme_classic()+
+  geom_vline(xintercept = peak_drivers)
+```
+
+
+
+
+
+

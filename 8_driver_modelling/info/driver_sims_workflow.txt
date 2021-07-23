@@ -1,0 +1,96 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Submitting simulation 1 as job on farm5 (with concatenated output files) 
+#	/lustre/scratch117/casm/team154/em16/simulations/rsimpop_drivers/rsimpop/
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+mkdir KX001_4
+mkdir KX001_4/parameters
+mkdir KX001_4/summary_stats
+mkdir KX001_4/logs
+mkdir KX001_4/scripts 
+mkdir KX001_4/pdfs
+mkdir KX001_4/drivers
+
+mkdir KX002_2
+mkdir KX002_2/parameters
+mkdir KX002_2/summary_stats
+mkdir KX002_2/logs
+mkdir KX002_2/scripts 
+mkdir KX002_2/pdfs
+mkdir KX002_2/drivers
+
+mkdir SX001_5
+mkdir SX001_5/parameters
+mkdir SX001_5/summary_stats
+mkdir SX001_5/logs
+mkdir SX001_5/scripts 
+mkdir SX001_5/pdfs
+mkdir SX001_5/drivers
+
+
+mkdir AX001_4
+mkdir AX001_4/parameters
+mkdir AX001_4/summary_stats
+mkdir AX001_4/logs
+mkdir AX001_4/scripts 
+mkdir AX001_4/pdfs
+mkdir AX001_4/drivers
+
+mkdir KX007_2
+mkdir KX007_2/parameters
+mkdir KX007_2/summary_stats
+mkdir KX007_2/logs
+mkdir KX007_2/scripts 
+mkdir KX007_2/pdfs
+mkdir KX007_2/drivers
+
+mkdir KX008_2
+mkdir KX008_2/parameters
+mkdir KX008_2/summary_stats
+mkdir KX008_2/logs
+mkdir KX008_2/scripts 
+mkdir KX008_2/pdfs
+mkdir KX008_2/drivers
+
+mkdir KX004_4
+mkdir KX004_4/parameters
+mkdir KX004_4/summary_stats
+mkdir KX004_4/logs
+mkdir KX004_4/scripts 
+mkdir KX004_4/pdfs
+mkdir KX004_4/drivers
+
+mkdir KX003_5
+mkdir KX003_5/parameters
+mkdir KX003_5/summary_stats
+mkdir KX003_5/logs
+mkdir KX003_5/scripts 
+mkdir KX003_5/pdfs
+mkdir KX003_5/drivers
+
+mkdir scripts
+mkdir logs
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+export PATH=/software/R-3.6.1/bin:${PATH}
+export R_HOME=$(R RHOME)
+export R_LIBS_USER="/nfs/users/nfs_e/em16/R/x86_64-pc-linux-gnu-library/3.6"
+
+RUNID='all_driver'
+OUTPUT='/lustre/scratch117/casm/team154/em16/simulations/rsimpop_drivers/rsimpop/'
+MEM=5000
+QUEUE=long
+CORES=2
+
+for n in $(seq 1 200);
+do
+bsub -J"${RUNID}" -M${MEM} -R"select[mem>${MEM}] rusage[mem=${MEM}] span[hosts=1]" -n ${CORES} -q ${QUEUE} -e %J.stderr -o %J.stdout \
+"xvfb-run -a Rscript --no-save --no-res/tore --verbose /lustre/scratch117/casm/team154/em16/simulations/rsimpop_drivers/rsimpop/scripts/driver_gamma_all.R ${RUNID} ${OUTPUT}  > /lustre/scratch117/casm/team154/em16/simulations/rsimpop_drivers/rsimpop/logs/driver_gamma_all.Rout 2>&1" $n
+done
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+

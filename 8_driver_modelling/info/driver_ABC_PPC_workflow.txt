@@ -1,0 +1,654 @@
+####################################################################################################
+#
+# The workflow is divided into two parts:
+# "Round 1" simulations are the simulations used to perform ABC sampling.
+# "Round 2" simulations ("resimulations") are the simulations used to perform PPC calculations.
+#
+####################################################################################################
+#
+# "Round 1" simulations are the simulations used to perform ABC sampling.
+#
+####################################################################################################
+
+# Run script sim_prior_drivers.R (within "job array");
+# The script sim_prior_drivers.R generates the "round 1" simulations;
+
+# Run script collect_prior_sims_drivers.R;
+# The script collect_prior_sims_drivers.R collects and pools together the output files from script sim_prior_drivers.R;
+
+# Run script run_ABC_drivers.R;
+# The script run_ABC_drivers.R applies the ABC regression method to the "round 1" simulations;
+
+####################################################################################################
+#
+# "Round 2" simulations ("resimulations") are the simulations used to perform PPC calculations.
+#
+####################################################################################################
+
+# Run script calc_obs_stats_test_drivers.R;
+# The script calc_obs_stats_test_drivers.R computes observed values of the summary satatistics for each individual;
+
+# Run script resim_conditionals_drivers.R (within "job array");
+# The script resim_conditionals_drivers.R generates the "round 2" simulations;
+
+# Run script compute_conditionals_drivers.R;
+# The script compute_conditionals_drivers.R collects and pools together the output files from script resim_conditionals_drivers.R;
+
+# Run script compute_ppp_value_drivers.R;
+# The script compute_ppp_value_drivers.R reads in the output from script compute_conditionals_drivers.R;
+# The script compute_ppp_value_drivers.R reads in a vector of summary statistic names ("stat_name_vect"), associated with a specific ID ("stat_set_ID");
+# The script compute_ppp_value_drivers.R computes the posterior predictive p-value (based on the "chi-squared discrepency" for the specified set of summary statistics) for each individual donor.
+
+###########################################################################################################
+
+####################################################################################################
+#
+# "Round 1" simulations are the simulations used to perform ABC sampling.
+#
+####################################################################################################
+
+# Run script sim_prior_drivers.R (within "job array");
+# The script sim_prior_drivers.R generates the "round 1" simulations;
+
+# Run script collect_prior_sims_drivers.R;
+# The script collect_prior_sims_drivers.R collects and pools together the output files from script sim_prior_drivers.R;
+
+# Run script run_ABC_drivers.R;
+# The script run_ABC_drivers.R applies the ABC regression method to the "round 1" simulations;
+
+####################################################################################################
+
+# Set-up work directory;
+
+LSB_DEFAULTGROUP=team154-grp
+
+farm_path="/lustre/scratch116/casm/cgp/users/kd7/farm_work/"
+project_path=${farm_path}"ABC/hierarchical_ABC/hierarchical_ABC_drivers/farm_jobs/array_jobs_4/"
+SOURCE_PATH=${project_path}"source/"
+
+project_out_path=${project_path}"output/"
+cd ${project_path}
+mkdir output
+
+LOGS_PATH=${project_out_path}"logs/"
+cd ${project_out_path}
+mkdir logs
+
+####################################################################################################
+
+PATIENT_ARRAY=("KX003" "KX004" "KX008" "KX007")
+PATIENT_TREE_ARRAY=("KX003_5" "KX004_4" "KX008_2" "KX007_2")
+PATIENT_AGE_ARRAY=(81 77 76 75)
+PATIENT_N_WGS_ARRAY=(328 451 367 315)
+
+N_PATIENTS=${#PATIENT_ARRAY[@]}
+N_SIMS_MAX_1=100000
+N_SIMS_ACCEPT_1=2000
+N_SIMS_PER_RUN=20
+N_RUNS_1=5000
+
+N_SIMS_1=$((${N_SIMS_PER_RUN}*${N_RUNS_1}))
+
+echo "N_SIMS_PER_RUN = ${N_SIMS_PER_RUN}"
+echo "N_RUNS_1 = ${N_RUNS_1}"
+echo "N_SIMS_1 = ${N_SIMS_1}"
+
+ABC_STAT_SET_ID="ABC_1"
+ABC_1_STAT_NAME_VECT=("n_singletons_1" "clade_size_a_1" "clade_size_b_1" "clade_size_c_1" "clade_size_d_1" "clade_size_e_1" "n_singletons_2" "clade_size_a_2" "clade_size_b_2" "clade_size_c_2" "clade_size_d_2" "clade_size_e_2" "n_singletons_3" "clade_size_a_3" "clade_size_b_3" "clade_size_c_3" "clade_size_d_3" "clade_size_e_3" "ltt_1" "ltt_2" "ltt_3" "coal_1" "coal_2")
+
+# copy and rename array:
+ABC_STAT_NAME_VECT=("${ABC_1_STAT_NAME_VECT[@]}")
+
+LENGTH_ABC_STAT_NAME_VECT=${#ABC_STAT_NAME_VECT[@]}
+
+echo "ABC_STAT_NAME_VECT = ${ABC_STAT_NAME_VECT[@]}"
+echo "LENGTH_ABC_STAT_NAME_VECT = ${LENGTH_ABC_STAT_NAME_VECT}"
+
+POST_SAMPLE_FILE_NAME="posterior_sample.txt"
+
+# 
+# Run for-loop (as below) or run manually in sequnece (by specifying i = 0, 1, ..., 3);
+#
+
+for i in "${!PATIENT_ARRAY[@]}"
+do
+ echo "i = $i"
+ 
+ PATIENT_ID=${PATIENT_ARRAY[$i]}
+ PATIENT_TREE_ID=${PATIENT_TREE_ARRAY[$i]}
+ PATIENT_AGE=${PATIENT_AGE_ARRAY[$i]}
+ PATIENT_N_WGS=${PATIENT_N_WGS_ARRAY[$i]}
+ 
+ PATIENT_PATH="/lustre/scratch117/casm/team154/em16/"${PATIENT_ID}
+ PATIENT_TREE_PATH="/lustre/scratch117/casm/team154/em16/"${PATIENT_ID}"/"${PATIENT_TREE_ID}
+ TREE_PATH="/lustre/scratch117/casm/team154/em16/"${PATIENT_ID}"/"${PATIENT_TREE_ID}"/trees_vaf_cut/"
+ TREE_FILE_NAME="tree_"${PATIENT_TREE_ID}"_01_standard_rho01.tree"
+ TREE_FILE=${PATIENT_TREE_PATH}"/trees_vaf_cut/"${TREE_FILE_NAME}
+ 
+ PATIENT_OUT_PATH=${project_out_path}"output_"${PATIENT_ID}"/"
+ cd ${project_out_path}
+ mkdir "output_"${PATIENT_ID}
+ 
+ LOGS_PATH=${PATIENT_OUT_PATH}"logs/"
+ OBS_STATS_PATH=${PATIENT_OUT_PATH}"obs_stats_round_1/"
+ PRIOR_SIM_PATH=${PATIENT_OUT_PATH}"sims_round_1/"
+ POOLED_PRIOR_SIM_PATH=${PATIENT_OUT_PATH}"pooled_sims_round_1/"
+ ABC_OUTPUT_PATH=${PATIENT_OUT_PATH}"abc_output_round_1/"
+ 
+ cd ${PATIENT_OUT_PATH}
+ mkdir logs
+ mkdir obs_stats_round_1
+ mkdir sims_round_1
+ mkdir pooled_sims_round_1
+ mkdir abc_output_round_1
+ 
+ OBS_STATS_FILE_NAME="summary_stats.txt"
+ POOLED_PRIOR_SIM_FILE_NAME="pooled_sims.txt"
+ 
+ ################################################################################################################################
+ 
+ # Update "current" prior to "previous" posterior;
+ 
+ PRIOR_SAMPLE_FILE="not_used" # Not used when i=0; Updated when i >0;
+ 
+ USE_PRIOR_SAMPLE_BOOL=0
+ 
+ if [ "$i" -gt 0 ] ; then
+  PREVIOUS_PATIENT_ID=${PATIENT_ARRAY[$i - 1]}
+  PREVIOUS_ABC_OUTPUT_PATH=${project_out_path}"output_"${PREVIOUS_PATIENT_ID}"/abc_output_round_1/"
+  PREVIOUS_POST_SAMPLE_FILE=${PREVIOUS_ABC_OUTPUT_PATH}${POST_SAMPLE_FILE_NAME}
+  PRIOR_SAMPLE_FILE=${PREVIOUS_POST_SAMPLE_FILE}
+  
+  # USE_PRIOR_SAMPLE_BOOL=true
+  USE_PRIOR_SAMPLE_BOOL=1
+ fi
+ 
+ echo "USE_PRIOR_SAMPLE_BOOL = ${USE_PRIOR_SAMPLE_BOOL}"
+ echo "PRIOR_SAMPLE_FILE = ${PRIOR_SAMPLE_FILE}"
+ 
+ ################################################################################################################################
+ 
+ # Run script sim_prior_drivers.R (within "job array");
+ # The script sim_prior_drivers.R generates the "round 1" simulations;
+ # Draw parameter vectors from current "prior" distribution;
+ # Perform simulations;
+ 
+ PARAMS_SIM="${SOURCE_PATH} ${LOGS_PATH} ${PATIENT_ID} ${PATIENT_AGE} ${PATIENT_N_WGS} ${PRIOR_SIM_PATH} ${PRIOR_SAMPLE_FILE} ${USE_PRIOR_SAMPLE_BOOL} ${N_SIMS_PER_RUN}"
+ 
+ JOB_NAME_SIM="sim_prior_1_"${PATIENT_ID}
+ SH_SCRIPT_SIM="sim_prior_drivers.sh"
+ STDOUT_NAME_SIM="sim_prior_drivers"
+ 
+ MEM_SIM=5000 # 5000 MB
+ QUEUE_SIM=long
+ 
+ cd ${SOURCE_PATH}
+ chmod +x *.sh
+ bsub -G analysis-cgp -J "${JOB_NAME_SIM}[1-${N_RUNS_1}]" -q "${QUEUE_SIM}" -M ${MEM_SIM} -R "select[mem>${MEM_SIM}] rusage[mem=${MEM_SIM}]" -o ${LOGS_PATH}${STDOUT_NAME_SIM}_%J.stdout -e ${LOGS_PATH}${STDOUT_NAME_SIM}_%J.stderr "${SOURCE_PATH}${SH_SCRIPT_SIM} ${PARAMS_SIM}"
+ 
+ ################################################################################################################################
+ 
+ # Run script collect_prior_sims_drivers.R;
+ # The script collect_prior_sims_drivers.R collects and pools together the output files from script sim_prior_drivers.R;
+ # Collect sample of parameter vectors from current "prior" distribution,
+ # and sample of summary statistics from current "prior" distribution;
+ 
+ PARAMS_COLLECT_PRIOR="${SOURCE_PATH} ${LOGS_PATH} ${PRIOR_SIM_PATH} ${POOLED_PRIOR_SIM_PATH} ${POOLED_PRIOR_SIM_FILE_NAME} ${N_SIMS_PER_RUN} ${N_RUNS_1}"
+ 
+ JOB_NAME_COLLECT_PRIOR="collect_prior_1_"${PATIENT_ID}
+ SH_SCRIPT_COLLECT_PRIOR="collect_prior_sims_drivers.sh"
+ STDOUT_NAME_COLLECT_PRIOR="collect_prior_sims_drivers"
+ 
+ MEM_COLLECT_PRIOR=5000
+ QUEUE_COLLECT_PRIOR=normal
+ 
+ cd ${SOURCE_PATH}
+ chmod +x *.sh
+ 
+ bsub -G team154-grp -J ${JOB_NAME_COLLECT_PRIOR} -w "done(${JOB_NAME_SIM})" -q "${QUEUE_COLLECT_PRIOR}" -M ${MEM_COLLECT_PRIOR} -R "select[mem>${MEM_COLLECT_PRIOR}] rusage[mem=${MEM_COLLECT_PRIOR}] span[hosts=1]" -o ${LOGS_PATH}${STDOUT_NAME_COLLECT_PRIOR}_%J.stdout -e ${LOGS_PATH}${STDOUT_NAME_COLLECT_PRIOR}_%J.stderr "${SOURCE_PATH}${SH_SCRIPT_COLLECT_PRIOR} ${PARAMS_COLLECT_PRIOR}"
+ 
+ ################################################################################################################################
+ 
+ # Run script run_ABC_drivers.R;
+ # The script run_ABC_drivers.R applies the ABC regression method to the "round 1" simulations;
+ 
+ POOLED_PRIOR_SIM_FILE=${POOLED_PRIOR_SIM_PATH}${POOLED_PRIOR_SIM_FILE_NAME}
+ 
+ PARAMS_ABC="${SOURCE_PATH} ${LOGS_PATH} ${PATIENT_ID} ${TREE_FILE} ${OBS_STATS_PATH} ${OBS_STATS_FILE_NAME} ${POOLED_PRIOR_SIM_FILE} ${ABC_OUTPUT_PATH} ${POST_SAMPLE_FILE_NAME} ${N_SIMS_ACCEPT_1} ${N_SIMS_MAX_1} ${ABC_STAT_SET_ID} ${LENGTH_ABC_STAT_NAME_VECT} ${ABC_STAT_NAME_VECT[@]}"
+ 
+ JOB_NAME_ABC="ABC_1_"${PATIENT_ID}
+ SH_SCRIPT_ABC="run_ABC_drivers.sh"
+ STDOUT_NAME_ABC="run_ABC_drivers_1"
+ 
+ MEM_ABC=5000
+ QUEUE_ABC=normal
+ 
+ cd ${SOURCE_PATH}
+ chmod +x *.sh
+ 
+ bsub -G team154-grp -J ${JOB_NAME_ABC} -w "done(${JOB_NAME_COLLECT_PRIOR})" -q "${QUEUE_ABC}" -M ${MEM_ABC} -R "select[mem>${MEM_ABC}] rusage[mem=${MEM_ABC}] span[hosts=1]" -o ${LOGS_PATH}${STDOUT_NAME_ABC}_%J.stdout -e ${LOGS_PATH}${STDOUT_NAME_ABC}_%J.stderr "${SOURCE_PATH}${SH_SCRIPT_ABC} ${PARAMS_ABC}"
+ 
+ ################################################################################################################################
+ 
+ #
+ # Specify (complete) path to "current" posterior sample file;
+ #
+ 
+ POST_SAMPLE_FILE=${ABC_OUTPUT_PATH}${POST_SAMPLE_FILE_NAME}
+ 
+ ################################################################################################################################
+ 
+done
+
+echo "ABC_OUTPUT_PATH = ${ABC_OUTPUT_PATH}"
+echo "POST_SAMPLE_FILE = ${POST_SAMPLE_FILE}"
+
+################################################################################################################################
+
+
+####################################################################################################
+#
+# "Round 2" simulations ("resimulations") are the simulations used to perform PPC calculations.
+#
+####################################################################################################
+
+# Run script calc_obs_stats_test_drivers.R;
+# The script calc_obs_stats_test_drivers.R computes observed values of the summary satatistics for each individual;
+
+# Run script resim_conditionals_drivers.R (within "job array");
+# The script resim_conditionals_drivers.R generates the "round 2" simulations;
+
+# Run script compute_conditionals_drivers.R;
+# The script compute_conditionals_drivers.R collects and pools together the output files from script resim_conditionals_drivers.R;
+
+# Run script compute_ppp_value_drivers.R;
+# The script compute_ppp_value_drivers.R reads in the output from script compute_conditionals_drivers.R;
+# The script compute_ppp_value_drivers.R reads in a vector of summary statistic names ("stat_name_vect"), associated with a specific ID ("stat_set_ID");
+# The script compute_ppp_value_drivers.R computes the posterior predictive p-value (based on the "chi-squared discrepency" for the specified set of summary statistics) for each individual donor.
+
+####################################################################################################
+#
+# "Round 2" simulations ("resimulations") are the simulations used to perform PPC calculations.
+#
+# Run script calc_obs_stats_test_drivers.R;
+# The script calc_obs_stats_test_drivers.R computes observed values of the summary satatistics for each individual;
+#
+###########################################################################################################
+
+# Specify work directory;
+
+LSB_DEFAULTGROUP=team154-grp
+
+farm_path="/lustre/scratch116/casm/cgp/users/kd7/farm_work/"
+project_path=${farm_path}"ABC/hierarchical_ABC/hierarchical_ABC_drivers/farm_jobs/array_jobs_4/"
+SOURCE_PATH=${project_path}"source/"
+project_out_path=${project_path}"output/"
+LOGS_PATH=${project_out_path}"logs/"
+
+################################################################################################################################
+
+# Specify (complete) path to "current" posterior sample file;
+
+PATIENT_ARRAY=("KX003" "KX004" "KX008" "KX007")
+
+LENGTH_PATIENT_ARRAY=${#PATIENT_ARRAY[@]}
+
+LAST_PATIENT_ID=${PATIENT_ARRAY[${LENGTH_PATIENT_ARRAY} - 1]}
+
+PATIENT_OUT_PATH=${project_out_path}"output_"${PATIENT_ID}"/"
+ABC_OUTPUT_PATH=${PATIENT_OUT_PATH}"abc_output_round_1/"
+POST_SAMPLE_FILE=${ABC_OUTPUT_PATH}${POST_SAMPLE_FILE_NAME}
+
+################################################################################################################################
+
+# Create new directory for "current posterior sample";
+# Copy file containing "current posterior sample" (at the end of round 1) into new directory;
+
+POST_SAMPLE_1_PATH=${project_out_path}"posterior_round_1/"
+cd ${project_out_path}
+mkdir posterior_round_1
+
+POST_SAMPLE_1_FILE_NAME="posterior_sample_1.txt"
+
+cd ${POST_SAMPLE_1_PATH}
+cp ${POST_SAMPLE_FILE} ${POST_SAMPLE_1_FILE_NAME}
+
+POST_SAMPLE_1_FILE=${POST_SAMPLE_1_PATH}${POST_SAMPLE_1_FILE_NAME}
+
+################################################################################################################################
+
+# Set-up more "donor-specific" output directories;
+# Compute summary statistics from observed data;
+
+PATIENT_ARRAY=("KX003" "KX004" "KX008" "KX007" "AX001" "SX001" "KX002" "KX001")
+PATIENT_TREE_ARRAY=("KX003_5" "KX004_4" "KX008_2" "KX007_2" "AX001_4" "SX001_5" "KX002_2" "KX001_4")
+PATIENT_AGE_ARRAY=(81 77 76 75 63 48 38 29)
+PATIENT_N_WGS_ARRAY=(328 451 367 315 368 363 380 408)
+
+N_PATIENTS=${#PATIENT_ARRAY[@]}
+
+OBS_STATS_DIR_NAME="obs_stats_round_2"
+OBS_STATS_FILE_NAME="summary_stats.txt"
+
+CONDITIONAL_RESIM_DIR_NAME="conditional_resims"
+
+POOLED_CONDITIONAL_RESIM_DIR_NAME="pooled_conditional_resims"
+POOLED_CONDITIONAL_RESIM_FILE_NAME="pooled_conditional_resims.txt"
+
+PPC_OUTPUT_DIR_NAME="ppc_output"
+
+# 
+# Run for-loop (as below) or run manually in sequnece (by specifying i = 0, 1, ..., 7);
+#
+
+for i in "${!PATIENT_ARRAY[@]}"
+do
+ echo "i = $i"
+ 
+ PATIENT_ID=${PATIENT_ARRAY[$i]}
+ PATIENT_TREE_ID=${PATIENT_TREE_ARRAY[$i]}
+ PATIENT_AGE=${PATIENT_AGE_ARRAY[$i]}
+ PATIENT_N_WGS=${PATIENT_N_WGS_ARRAY[$i]}
+ 
+ PATIENT_PATH="/lustre/scratch117/casm/team154/em16/"${PATIENT_ID}
+ PATIENT_TREE_PATH="/lustre/scratch117/casm/team154/em16/"${PATIENT_ID}"/"${PATIENT_TREE_ID}
+ TREE_PATH="/lustre/scratch117/casm/team154/em16/"${PATIENT_ID}"/"${PATIENT_TREE_ID}"/trees_vaf_cut/"
+ TREE_FILE_NAME="tree_"${PATIENT_TREE_ID}"_01_standard_rho01.tree"
+ TREE_FILE=${PATIENT_TREE_PATH}"/trees_vaf_cut/"${TREE_FILE_NAME}
+ 
+ 
+ PATIENT_OUT_PATH=${project_out_path}"output_"${PATIENT_ID}"/"
+ cd ${project_out_path}
+ mkdir "output_"${PATIENT_ID}
+ 
+ LOGS_PATH=${PATIENT_OUT_PATH}"logs/"
+ OBS_STATS_PATH=${PATIENT_OUT_PATH}${OBS_STATS_DIR_NAME}"/"
+ CONDITIONAL_RESIM_PATH=${PATIENT_OUT_PATH}${CONDITIONAL_RESIM_DIR_NAME}"/"
+ POOLED_CONDITIONAL_RESIM_PATH=${PATIENT_OUT_PATH}${POOLED_CONDITIONAL_RESIM_DIR_NAME}"/"
+ PPC_OUTPUT_PATH=${PATIENT_OUT_PATH}${PPC_OUTPUT_DIR_NAME}"/"
+ 
+ cd ${PATIENT_OUT_PATH}
+ # mkdir logs
+ mkdir ${OBS_STATS_DIR_NAME}
+ mkdir ${CONDITIONAL_RESIM_DIR_NAME}
+ mkdir ${POOLED_CONDITIONAL_RESIM_DIR_NAME}
+ mkdir ${PPC_OUTPUT_DIR_NAME}
+ 
+ ################################################################################################################################
+ 
+ # Run script calc_obs_stats_test_drivers.R;
+ # The script calc_obs_stats_test_drivers.R computes observed values of the summary satatistics for each individual;
+ 
+ PARAMS_CALC_OBS_STATS="${SOURCE_PATH} ${LOGS_PATH} ${PATIENT_ID} ${TREE_FILE} ${OBS_STATS_PATH} ${OBS_STATS_FILE_NAME}"
+ 
+ JOB_NAME_CALC_OBS_STATS="calc_obs_stats_2"
+ SH_SCRIPT_CALC_OBS_STATS="calc_obs_stats_test_drivers.sh"
+ STDOUT_NAME_CALC_OBS_STATS="calc_obs_stats_2"
+ 
+ MEM_CALC_OBS_STATS=5000
+ QUEUE_CALC_OBS_STATS=normal
+ 
+ cd ${SOURCE_PATH}
+ chmod +x *.sh
+ 
+ bsub -G team154-grp -J ${JOB_NAME_CALC_OBS_STATS} -q "${QUEUE_CALC_OBS_STATS}" -M ${MEM_CALC_OBS_STATS} -R "select[mem>${MEM_CALC_OBS_STATS}] rusage[mem=${MEM_CALC_OBS_STATS}] span[hosts=1]" -o ${LOGS_PATH}${STDOUT_NAME_CALC_OBS_STATS}_%J.stdout -e ${LOGS_PATH}${STDOUT_NAME_CALC_OBS_STATS}_%J.stderr "${SOURCE_PATH}${SH_SCRIPT_CALC_OBS_STATS} ${PARAMS_CALC_OBS_STATS}"
+ 
+ ################################################################################################################################
+ 
+done
+
+################################################################################################################################
+
+####################################################################################################
+#
+# "Round 2" simulations ("resimulations") are the simulations used to perform PPC calculations.
+#
+# Run script resim_conditionals_drivers.R (within "job array");
+# The script resim_conditionals_drivers.R generates the "round 2" simulations;
+#
+###########################################################################################################
+
+# Specify work directory;
+
+LSB_DEFAULTGROUP=team154-grp
+
+farm_path="/lustre/scratch116/casm/cgp/users/kd7/farm_work/"
+project_path=${farm_path}"ABC/hierarchical_ABC/hierarchical_ABC_drivers/farm_jobs/array_jobs_4/"
+SOURCE_PATH=${project_path}"source/"
+project_out_path=${project_path}"output/"
+LOGS_PATH=${project_out_path}"logs/"
+
+################################################################################################################################
+
+# Set-up more "donor-specific" output directories;
+# Compute summary statistics from observed data;
+
+PATIENT_ARRAY=("KX003" "KX004" "KX008" "KX007" "AX001" "SX001" "KX002" "KX001")
+PATIENT_TREE_ARRAY=("KX003_5" "KX004_4" "KX008_2" "KX007_2" "AX001_4" "SX001_5" "KX002_2" "KX001_4")
+PATIENT_AGE_ARRAY=(81 77 76 75 63 48 38 29)
+PATIENT_N_WGS_ARRAY=(328 451 367 315 368 363 380 408)
+
+N_PATIENTS=${#PATIENT_ARRAY[@]}
+
+################################################################################################################################
+
+# BEGIN_POST_OBS=1
+# END_POST_OBS=1000
+
+BEGIN_POST_OBS=1
+END_POST_OBS=500
+
+N_POST_OBS=$((${END_POST_OBS}-${BEGIN_POST_OBS}))
+N_POST_OBS=$((${N_POST_OBS}+1))
+
+N_SIMS_PER_RUN=20
+N_RUNS_PER_POST_OBS=50
+
+N_RESIM_RUNS=$((${N_RUNS_PER_POST_OBS}*${N_POST_OBS}))
+
+echo "N_POST_OBS = ${N_POST_OBS}"
+echo "N_RUNS_PER_POST_OBS = ${N_RUNS_PER_POST_OBS}"
+echo "N_RESIM_RUNS = ${N_RESIM_RUNS}"
+
+N_RESIMS_PER_RUN=${N_SIMS_PER_RUN}
+
+N_RESIMS_TOTAL=$((${N_RESIMS_PER_RUN}*${N_RESIM_RUNS}))
+
+echo "N_RESIM_RUNS = ${N_RESIM_RUNS}"
+echo "N_RESIMS_PER_RUN = ${N_RESIMS_PER_RUN}"
+echo "N_RESIMS_TOTAL = ${N_RESIMS_TOTAL}"
+
+N_RESIMS_PER_POST_OBS=$((${N_RESIMS_PER_RUN}*${N_RUNS_PER_POST_OBS}))
+
+echo "N_RESIMS_PER_RUN = ${N_RESIMS_PER_RUN}"
+echo "N_RUNS_PER_POST_OBS = ${N_RUNS_PER_POST_OBS}"
+echo "N_RESIMS_PER_POST_OBS = ${N_RESIMS_PER_POST_OBS}"
+
+################################################################################################################################
+
+# Run script resim_conditionals_drivers.R (within "job array");
+# The script resim_conditionals_drivers.R generates the "round 2" simulations;
+
+PARAMS_RESIM_CONDITIONLS="${SOURCE_PATH} ${LOGS_PATH} ${project_out_path} ${POST_SAMPLE_1_FILE} ${CONDITIONAL_RESIM_DIR_NAME} ${BEGIN_POST_OBS} ${END_POST_OBS} ${N_RUNS_PER_POST_OBS} ${N_RESIMS_PER_RUN} ${N_PATIENTS} ${PATIENT_ARRAY[@]} ${PATIENT_AGE_ARRAY[@]} ${PATIENT_N_WGS_ARRAY[@]}"
+
+JOB_NAME_RESIM_CONDITIONLS="resim_conditionals_1"
+SH_SCRIPT_RESIM_CONDITIONLS="resim_conditionals_drivers.sh"
+STDOUT_NAME_RESIM_CONDITIONLS="resim_conditionals"
+
+MEM_RESIM_CONDITIONLS=5000 # 5000 MB
+QUEUE_RESIM_CONDITIONLS=long
+
+cd ${SOURCE_PATH}
+chmod +x *.sh
+
+bsub -G team154-grp -J "${JOB_NAME_RESIM_CONDITIONLS}[1-${N_RESIM_RUNS}]" -q "${QUEUE_RESIM_CONDITIONLS}" -M ${MEM_RESIM_CONDITIONLS} -R "select[mem>${MEM_RESIM_CONDITIONLS}] rusage[mem=${MEM_RESIM_CONDITIONLS}]" -o ${LOGS_PATH}${STDOUT_NAME_RESIM_CONDITIONLS}_%J.stdout -e ${LOGS_PATH}${STDOUT_NAME_RESIM_CONDITIONLS}_%J.stderr "${SOURCE_PATH}${SH_SCRIPT_RESIM_CONDITIONLS} ${PARAMS_RESIM_CONDITIONLS}"
+
+################################################################################################################################
+
+####################################################################################################
+#
+# "Round 2" simulations ("resimulations") are the simulations used to perform PPC calculations.
+#
+# Run script compute_conditionals_drivers.R;
+# The script compute_conditionals_drivers.R collects and pools together the output files from script resim_conditionals_drivers.R;
+#
+# Run script compute_ppp_value_drivers.R;
+# The script compute_ppp_value_drivers.R reads in the output from script compute_conditionals_drivers.R;
+# The script compute_ppp_value_drivers.R reads in a vector of summary statistic names ("stat_name_vect"), associated with a specific ID ("stat_set_ID");
+# The script compute_ppp_value_drivers.R computes the posterior predictive p-value (based on the "chi-squared discrepency" for the specified set of summary statistics) for each individual donor.
+#
+###########################################################################################################
+
+# Specify work directory;
+
+LSB_DEFAULTGROUP=team154-grp
+
+farm_path="/lustre/scratch116/casm/cgp/users/kd7/farm_work/"
+project_path=${farm_path}"ABC/hierarchical_ABC/hierarchical_ABC_drivers/farm_jobs/array_jobs_4/"
+SOURCE_PATH=${project_path}"source/"
+project_out_path=${project_path}"output/"
+LOGS_PATH=${project_out_path}"logs/"
+
+################################################################################################################################
+
+# Set-up more "donor-specific" output directories;
+# Compute summary statistics from observed data;
+
+PATIENT_ARRAY=("KX003" "KX004" "KX008" "KX007" "AX001" "SX001" "KX002" "KX001")
+PATIENT_TREE_ARRAY=("KX003_5" "KX004_4" "KX008_2" "KX007_2" "AX001_4" "SX001_5" "KX002_2" "KX001_4")
+PATIENT_AGE_ARRAY=(81 77 76 75 63 48 38 29)
+PATIENT_N_WGS_ARRAY=(328 451 367 315 368 363 380 408)
+
+N_PATIENTS=${#PATIENT_ARRAY[@]}
+
+################################################################################################################################
+
+# BEGIN_POST_OBS=1
+# END_POST_OBS=1000
+
+BEGIN_POST_OBS=1
+END_POST_OBS=500
+
+N_POST_OBS=$((${END_POST_OBS}-${BEGIN_POST_OBS}))
+N_POST_OBS=$((${N_POST_OBS}+1))
+
+N_SIMS_PER_RUN=20
+N_RUNS_PER_POST_OBS=50
+
+N_RESIM_RUNS=$((${N_RUNS_PER_POST_OBS}*${N_POST_OBS}))
+
+echo "N_POST_OBS = ${N_POST_OBS}"
+echo "N_RUNS_PER_POST_OBS = ${N_RUNS_PER_POST_OBS}"
+echo "N_RESIM_RUNS = ${N_RESIM_RUNS}"
+
+N_RESIMS_PER_RUN=${N_SIMS_PER_RUN}
+
+N_RESIMS_TOTAL=$((${N_RESIMS_PER_RUN}*${N_RESIM_RUNS}))
+
+echo "N_RESIM_RUNS = ${N_RESIM_RUNS}"
+echo "N_RESIMS_PER_RUN = ${N_RESIMS_PER_RUN}"
+echo "N_RESIMS_TOTAL = ${N_RESIMS_TOTAL}"
+
+N_RESIMS_PER_POST_OBS=$((${N_RESIMS_PER_RUN}*${N_RUNS_PER_POST_OBS}))
+
+echo "N_RESIMS_PER_RUN = ${N_RESIMS_PER_RUN}"
+echo "N_RUNS_PER_POST_OBS = ${N_RUNS_PER_POST_OBS}"
+echo "N_RESIMS_PER_POST_OBS = ${N_RESIMS_PER_POST_OBS}"
+
+################################################################################################################################
+
+PPC_12_STAT_NAME_VECT=("n_singletons_1" "clade_size_a_1" "clade_size_b_1" "clade_size_c_1" "clade_size_d_1" "clade_size_e_1" "n_singletons_2" "clade_size_a_2" "clade_size_b_2" "clade_size_c_2" "clade_size_d_2" "clade_size_e_2" "ltt_1" "ltt_2" "coal_1" "coal_2")
+PPC_123_STAT_NAME_VECT=("n_singletons_1" "clade_size_a_1" "clade_size_b_1" "clade_size_c_1" "clade_size_d_1" "clade_size_e_1" "n_singletons_2" "clade_size_a_2" "clade_size_b_2" "clade_size_c_2" "clade_size_d_2" "clade_size_e_2" "n_singletons_3" "clade_size_a_3" "clade_size_b_3" "clade_size_c_3" "clade_size_d_3" "clade_size_e_3" "ltt_1" "ltt_2" "ltt_3" "coal_1" "coal_2" "coal_3")
+
+PPC_STAT_SET_ID="PPC_12"
+# PPC_STAT_SET_ID="PPC_123"
+
+PPC_STAT_NAME_VECT=("${PPC_12_STAT_NAME_VECT[@]}")
+# PPC_STAT_NAME_VECT=("${PPC_123_STAT_NAME_VECT[@]}")
+
+LENGTH_PPC_STAT_NAME_VECT=${#PPC_STAT_NAME_VECT[@]}
+
+# 
+# Run for-loop (as below) or run manually in sequnece (by specifying i = 0, 1, ..., 7);
+#
+
+for i in "${!PATIENT_ARRAY[@]}"
+do
+ echo "i = $i"
+ 
+ PATIENT_ID=${PATIENT_ARRAY[$i]}
+ PATIENT_TREE_ID=${PATIENT_TREE_ARRAY[$i]}
+ PATIENT_AGE=${PATIENT_AGE_ARRAY[$i]}
+ PATIENT_N_WGS=${PATIENT_N_WGS_ARRAY[$i]}
+ 
+ PATIENT_PATH="/lustre/scratch117/casm/team154/em16/"${PATIENT_ID}
+ PATIENT_TREE_PATH="/lustre/scratch117/casm/team154/em16/"${PATIENT_ID}"/"${PATIENT_TREE_ID}
+ TREE_PATH="/lustre/scratch117/casm/team154/em16/"${PATIENT_ID}"/"${PATIENT_TREE_ID}"/trees_vaf_cut/"
+ TREE_FILE_NAME="tree_"${PATIENT_TREE_ID}"_01_standard_rho01.tree"
+ TREE_FILE=${PATIENT_TREE_PATH}"/trees_vaf_cut/"${TREE_FILE_NAME}
+ 
+ 
+ PATIENT_OUT_PATH=${project_out_path}"output_"${PATIENT_ID}"/"
+ cd ${project_out_path}
+ mkdir "output_"${PATIENT_ID}
+ 
+ LOGS_PATH=${PATIENT_OUT_PATH}"logs/"
+ OBS_STATS_PATH=${PATIENT_OUT_PATH}${OBS_STATS_DIR_NAME}"/"
+ CONDITIONAL_RESIM_PATH=${PATIENT_OUT_PATH}${CONDITIONAL_RESIM_DIR_NAME}"/"
+ POOLED_CONDITIONAL_RESIM_PATH=${PATIENT_OUT_PATH}${POOLED_CONDITIONAL_RESIM_DIR_NAME}"/"
+ PPC_OUTPUT_PATH=${PATIENT_OUT_PATH}${PPC_OUTPUT_DIR_NAME}"/"
+ 
+ ################################################################################################################################
+ 
+ # Run script compute_conditionals_drivers.R;
+ # The script compute_conditionals_drivers.R collects and pools together the output files from script resim_conditionals_drivers.R;
+ 
+ echo "PATIENT_ID = ${PATIENT_ID}"
+ 
+ PARAMS_COMPUTE_CONDITIONLS="${SOURCE_PATH} ${LOGS_PATH} ${CONDITIONAL_RESIM_PATH} ${POST_SAMPLE_1_FILE} ${OBS_STATS_FILE} ${POOLED_CONDITIONAL_RESIM_PATH} ${POOLED_CONDITIONAL_RESIM_FILE_NAME} ${N_RESIMS_PER_POST_OBS} ${PATIENT_ID}"
+ 
+ echo "PARAMS_COMPUTE_CONDITIONLS = ${PARAMS_COMPUTE_CONDITIONLS[@]}"
+ 
+ JOB_NAME_COMPUTE_CONDITIONLS="compute_conditionals_"${PATIENT_ID}
+ SH_SCRIPT_COMPUTE_CONDITIONLS="compute_conditionals_drivers.sh"
+ STDOUT_NAME_COMPUTE_CONDITIONLS="compute_conditionals"
+ 
+ MEM_COMPUTE_CONDITIONLS=5000
+ # QUEUE_COMPUTE_CONDITIONLS=long
+ QUEUE_COMPUTE_CONDITIONLS=normal
+ 
+ cd ${SOURCE_PATH}
+ chmod +x *.sh
+ 
+ bsub -G team154-grp -J ${JOB_NAME_COMPUTE_CONDITIONLS} -q "${QUEUE_COMPUTE_CONDITIONLS}" -M ${MEM_COMPUTE_CONDITIONLS} -R "select[mem>${MEM_COMPUTE_CONDITIONLS}] rusage[mem=${MEM_COMPUTE_CONDITIONLS}] span[hosts=1]" -o ${LOGS_PATH}${STDOUT_NAME_COMPUTE_CONDITIONLS}_%J.stdout -e ${LOGS_PATH}${STDOUT_NAME_COMPUTE_CONDITIONLS}_%J.stderr "${SOURCE_PATH}${SH_SCRIPT_COMPUTE_CONDITIONLS} ${PARAMS_COMPUTE_CONDITIONLS}"
+ 
+ ################################################################################################################################
+ 
+ # Run script compute_ppp_value_drivers.R;
+ # The script compute_ppp_value_drivers.R reads in the output from script compute_conditionals_drivers.R;
+ # The script compute_ppp_value_drivers.R reads in a vector of summary statistic names ("stat_name_vect"), associated with a specific ID ("stat_set_ID");
+ # The script compute_ppp_value_drivers.R computes the posterior predictive p-value (based on the "chi-squared discrepency" for the specified set of summary statistics) for each individual donor.
+ 
+ PARAMS_PPP="${SOURCE_PATH} ${LOGS_PATH} ${POOLED_CONDITIONAL_RESIM_FILE} ${OBS_STATS_FILE} ${PPC_OUTPUT_PATH} ${N_RESIMS_PER_POST_OBS} ${PATIENT_ID} ${PPC_STAT_SET_ID} ${LENGTH_PPC_STAT_NAME_VECT} ${PPC_STAT_NAME_VECT[@]}"
+ 
+ echo "PARAMS_PPP = ${PARAMS_PPP[@]}"
+ 
+ JOB_NAME_PPP="ppp_"${PATIENT_ID}
+ SH_SCRIPT_PPP="compute_ppp_value_drivers.sh"
+ STDOUT_NAME_PPP="compute_ppp_value"
+ 
+ MEM_PPP=5000
+ QUEUE_PPP=normal
+ 
+ cd ${SOURCE_PATH}
+ chmod +x *.sh
+ 
+ bsub -G team154-grp -J ${JOB_NAME_PPP} -w "done(${JOB_NAME_COMPUTE_CONDITIONLS})" -q "${QUEUE_PPP}" -M ${MEM_PPP} -R "select[mem>${MEM_PPP}] rusage[mem=${MEM_PPP}] span[hosts=1]" -o ${LOGS_PATH}${STDOUT_NAME_PPP}_%J.stdout -e ${LOGS_PATH}${STDOUT_NAME_PPP}_%J.stderr "${SOURCE_PATH}${SH_SCRIPT_PPP} ${PARAMS_PPP}"
+ 
+ ################################################################################################################################
+ 
+done
+
+################################################################################################################################
+
+
