@@ -1,3 +1,17 @@
+# Functions to run phylofit
+# Author: Nick Williams
+
+# get_phylologistic_dat
+# get_traj_res
+# fit_clade
+# shade_between
+# plot_res
+# get_subsampled_tree_fixed_prop
+# get_sampled_mutant_clade_from_sim
+# plot_selsim_infer
+# add_outgroup
+# do_comparison_plots
+
 library("rsimpop")
 library("rstan")
 phylofit.stan="functions{

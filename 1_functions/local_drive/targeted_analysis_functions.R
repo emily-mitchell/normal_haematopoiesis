@@ -1,3 +1,40 @@
+# Functions to add interrogation of mutation calls in the tree and overlay targetted sequencing data 
+# Author: Nick Williams / Mike Spencer Chapman
+
+# Most not applicable to current work
+
+# get_sample_mutations
+# validate_colony_muts
+# validate_mutation
+# view_validation_vaf_plot
+# get_level_daughters
+# get_direct_daughters
+# print_lineage_loss_stats
+# plot_node_cell_frac
+# plot_node_number
+# add_annotation_targeted
+# add_categorical_col
+# plot_sample_tip_label
+# plot_sample_tip_point
+# plot_d_or_r_tip_point
+# get_ancestral_nodes
+# get_node_read_counts
+# bootstrap_counts
+# check_branch_distribution
+# find_early_muts_from_branch
+# node_lineage_loss
+# plotDonut
+# generate_targ_seq_plots
+# squash_tree
+# calculate_vaf
+# prune_tree_of_zero_tips
+# clean_up_post
+# estep
+# mstep
+# em.algo
+# binom_mix
+# calculate_cell_frac
+
 get_sample_mutations = function(sample,tree,details,vcf_file=FALSE) {
   terminal_node <- which(tree$tip.label == sample)
   all_nodes <- get_ancestral_nodes(terminal_node,tree$edge)

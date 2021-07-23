@@ -1,0 +1,2 @@
+# 'farm_only' functions are used only for R scripts run on the compute farm
+# 'local_drive' functions are used for all R scripts
