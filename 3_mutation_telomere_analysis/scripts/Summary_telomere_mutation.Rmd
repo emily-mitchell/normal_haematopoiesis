@@ -1,0 +1,411 @@
+---
+title: "Mutation burden and telomere length analysis"
+output: html_document
+author: Emily Mitchell
+---
+
+### Summary
+This script performs analysis, visualisation and linear regression of mutation burden and telomere length across samples from the whole dataset.  
+1. Data visualisation  
+2. Calculation mean sequencing depth  
+3. Calculation mean telomere length in cord blood  
+4. Linear models  
+5. Shapiro Wilks test of normality on telomere length data per individual  
+6. qqplots of telomere length data per individual  
+7. Density plots of telomere data per individual  
+8. Calculating proportion of 'outlying' telomere lengths per individual  
+9. Linear regression of proportion outliers with age  
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##### Open libraries 
+```{r}
+suppressMessages(library(dplyr))
+suppressMessages(library(lme4))
+suppressMessages(library(stringr))
+suppressMessages(library(ggplot2))
+suppressMessages(library(stats))
+suppressMessages(library(RColorBrewer))
+suppressMessages(library(ggpubr))
+```
+
+```{r warning = FALSE}
+setwd("~/Documents/PhD/Sequencing_results/DNA_seq/XX_summary/telomere_mutation")
+```
+
+##### Load colony efficiency file
+```{r}
+col_efficiency <- read.csv("~/Documents/PhD/Lab_work/Colony_efficiency/Colony_efficiency_cut.csv", stringsAsFactors = F)
+```
+
+##### Load matrix of mutation burdens, indel burdens and telomere lengths per sample
+```{r}
+summ_cut <- read.csv("~/Documents/PhD/Sequencing_results/DNA_seq/XX_summary/telomere_mutation/data/Summary_cut.csv",  stringsAsFactors = F)
+```
+
+```{r}
+summ_cut$donor_id <- factor(summ_cut$donor_id, levels = c("CB001", "CB002", "KX001", "KX002","SX001","AX001", "KX007","KX008","KX004","KX003"))
+col_efficiency$donor_id <- factor(col_efficiency$donor_id, levels = c("CB001", "CB002", "KX001", "KX002","SX001","AX001", "KX007","KX008","KX004","KX003"))
+```
+
+### 1. Data visualisation
+```{r}
+ggplot(col_efficiency)+
+  theme_bw()+
+  scale_fill_manual(values = brewer.pal(10,"Paired")[c(1:4,7,8,5,6,9,10)])+
+  labs(y="Colony efficiency", x="Donor")+
+  theme(text=element_text(size=12))+
+  ylim(0,1.0)+
+  geom_col(aes(group = donor_id, y= efficiency, x = donor_id, fill = donor_id), width = 0.9)+
+  labs(title = "Colony Efficiency")
+```
+
+```{r warning = FALSE}
+ggplot(summ_cut[summ_cut$platform == "hiseq" & summ_cut$cell_type == "HSC",])+
+  theme_bw()+
+  labs(x="Age (years)", y="Telomere  lenght (bp)")+
+  xlim(-10,100)+
+  ylim(0,25000)+
+  theme(text=element_text(size=12))+
+  guides(fill="none")+
+  scale_color_manual(values = brewer.pal(10,"Paired")[c(1,3,4,7,8,9,10)])+
+  geom_jitter(aes(group = donor_id, x = age, y =tel_length, col = donor_id), width = 1)+
+geom_boxplot(aes(group = donor_id, x = age, y =tel_length), outlier.alpha = 0 )+
+  labs(title = "Telomere length - all data included")
+```
+
+```{r warning = FALSE}
+ggplot(summ_cut[summ_cut$platform == "hiseq" & summ_cut$cell_type == "HSC",])+
+  theme_bw()+
+  labs(x="Age (years)", y="Telomere length (bp)")+
+  xlim(-10,100)+
+  ylim(0,15000)+
+  theme(text=element_text(size=12))+
+  guides(fill="none")+
+  scale_color_manual(values = brewer.pal(10,"Paired")[c(1,3,4,7,8,9,10)])+
+  geom_jitter(aes(group = donor_id, x = age, y =tel_length, col = donor_id), width = 1)+
+  geom_boxplot(aes(group = donor_id, x = age, y =tel_length), outlier.alpha = 0 )+
+  labs(title = "Telomere length - y-axis truncated at 15000bp")
+```
+
+
+```{r warning = FALSE}
+
+ggplot(summ_cut[summ_cut$cell_type == "HSC",])+
+  theme_bw()+
+  labs(x="Age (years)", y="Number SNVs")+
+  xlim(-10,100)+
+  ylim(0,2000)+
+  theme(text=element_text(size=12))+
+  guides(fill="none")+
+  scale_color_manual(values = brewer.pal(10,"Paired")[c(1:4,7,8,5,6,9,10)])+
+  geom_smooth(data = (summ_cut[summ_cut$cell_type == "HSC",]), method = "lm",aes(x = age, y =sub_adj), size = 0.5, colour = "grey", se = T)+
+  geom_jitter(aes(group = donor_id, x = age, y =sub_adj, col = donor_id))+
+  labs(title ="Number of single nucleotide variants")
+```
+
+
+```{r warning = FALSE}
+ggplot(summ_cut[summ_cut$cell_type == "HSC",])+
+  theme_bw()+
+  labs(x="Age (years)", y="Number indels")+
+  xlim(-10,100)+
+  ylim(0,100)+
+  theme(text=element_text(size=12))+
+  geom_smooth(data = (summ_cut[summ_cut$cell_type == "HSC",]), method = "lm",aes(x = age, y =indel_adj), size = 0.5, colour = "grey", se = T)+
+  guides(fill="none")+
+  scale_color_manual(values = brewer.pal(10,"Paired")[c(1:4,7,8,5,6,9,10)])+
+  geom_jitter(aes(group = donor_id, x = age, y =indel_adj, col = donor_id))+
+  labs("Number of indels")
+```
+
+```{r}
+ggplot(summ_cut[summ_cut$mean_depth > 14,])+
+  theme_classic()+
+  labs(x="Age (years)", y="Number non-synonymous mutations")+
+  xlim(-10,100)+
+  ylim(0,100)+
+  theme(text=element_text(size=12))+
+  guides(fill="none")+
+  scale_color_manual(values = brewer.pal(10,"Paired")[c(1:4,7,8,5,6,9,10)])+
+  geom_smooth(data = (summ_cut[summ_cut$mean_depth > 14,]), method = "lm",aes(x = age, y =number_non_syn), size = 0.5, colour = "grey", se = T)+
+  geom_jitter(aes(group = donor_id, x = age, y =number_non_syn, col = donor_id), width = 0.5)+
+  labs(title ="Number of non-synonymous variants")
+```
+
+```{r warning = FALSE}
+ggplot(subset(summ_cut, summ_cut$donor_id %in% c("CB002","SX001","AX001","KX004")))+
+  theme_bw()+
+  labs(x="Age (years)", y="Number indels")+
+  xlim(-10,100)+
+  ylim(0,100)+
+  theme(text=element_text(size=12))+
+geom_smooth(data = (subset(summ_cut, summ_cut$donor_id %in% c("CB002","SX001","AX001","KX004") & summ_cut$cell_type == "HSC")), method = "lm",aes(x = age, y =indel_adj), size = 0.5, colour = "red", se = T)+
+  geom_smooth(data = (subset(summ_cut, summ_cut$donor_id %in% c("CB002","SX001","AX001","KX004") & summ_cut$cell_type == "Progenitor")), method = "lm",aes(x = age, y =indel_adj), size = 0.5, colour = "blue", se = T)+
+  labs(title = "Number of indels in progenitors (blue) and HSC/MPPs (red)")
+```
+
+
+```{r warning = FALSE}
+
+ggplot(subset(summ_cut, summ_cut$donor_id %in% c("CB002","SX001","AX001","KX004")))+
+  theme_bw()+
+  labs(x="Age (years)", y="Number SNVs")+
+  xlim(-10,100)+
+  ylim(0,2000)+
+  theme(text=element_text(size=12))+
+  geom_smooth(data = (subset(summ_cut, summ_cut$donor_id %in% c("CB002","SX001","AX001","KX004") & summ_cut$cell_type == "HSC")), method = "lm",aes(x = age, y =sub_adj), size = 0.5, colour = "red", se = T)+
+  geom_smooth(data = (subset(summ_cut, summ_cut$donor_id %in% c("CB002","SX001","AX001","KX004") & summ_cut$cell_type == "Progenitor")), method = "lm",aes(x = age, y =sub_adj), size = 0.5, colour = "blue", se = T)+
+  labs(title = "Number of SNVs in progenitors (blue) and HSC/MPPs (red)")
+```
+
+### 2. Calculation mean sequencing depth
+```{r}
+mean(summ_cut$mean_depth)
+```
+
+### 3. Calculation mean telomere length in cord blood
+```{r}
+mean_tel_CB001 <- mean(summ_cut$tel_length[summ_cut$donor_id == "CB001"])
+mean_tel_CB001
+```
+
+### 4. Linear models
+
+##### Linear model to assess the effect of age on the accumulation of SNVs in HSC/MPPs
+```{r warning = FALSE}
+age.mut <- lmer(sub_adj ~ age + (age | donor_id), data = summ_cut[summ_cut$cell_type == "HSC",], REML = F)
+age.mut
+summary(age.mut)
+```
+
+##### Linear model to assess the effect of age on the accumulation of indels in HSC/MPPs
+```{r warning = FALSE}
+age.indel <- lmer(indel_adj ~ age + (age | donor_id), data = summ_cut[summ_cut$cell_type == "HSC",], REML = F)
+age.indel
+summary(age.indel)
+```
+
+##### Linear model to assess effect of age on telomere length including only the 'young adult' individuals
+```{r message = FALSE}
+
+age.tel <- lmer(tel_length ~ age + (age | donor_id), data = subset(summ_cut, summ_cut$platform == "hiseq" & !summ_cut$donor_id %in% c("CB001", "KX003", "KX004") & summ_cut$cell_type == "HSC"), REML = F)
+age.tel
+summary(age.tel)
+```
+
+##### Linear model to assess effect of age on telomere length including all adult individuals
+```{r message = FALSE}
+
+age.tel <- lmer(tel_length ~ age + (age | donor_id), data = subset(summ_cut, summ_cut$platform == "hiseq" & !summ_cut$donor_id %in% c("CB001") & summ_cut$cell_type == "HSC"), REML = F)
+age.tel
+summary(age.tel)
+```
+
+##### Linear model to assess the effect of age and cell type on the accumulation of SNVs
+```{r message = FALSE}
+age.cell.type <- lmer(sub_adj ~ age + cell_type + (age | donor_id) + (cell_type | donor_id), data = subset(summ_cut, summ_cut$donor_id %in% c("CB002","SX001","AX001","KX004")), REML = F)
+age.cell.type
+summary(age.cell.type)
+```
+
+##### Linear model to assess the effect of age and cell type on the accumulation of indels
+```{r warning = FALSE}
+age.cell.type.indel <- lmer(indel_adj ~ age + cell_type + (age | donor_id) + (cell_type | donor_id), data = subset(summ_cut, summ_cut$donor_id %in% c("CB002","SX001","AX001","KX004")), REML = F)
+age.cell.type.indel
+summary(age.cell.type.indel)
+```
+
+##### Linear model to assess the effect of age on the accumulation of non-synonymous mutations (depth cut off)
+```{r}
+age.non_syn.depth <- lmer(number_non_syn ~ age + (age | donor_id), data = subset(summ_cut, mean_depth > 14), REML = F)
+age.non_syn.depth
+summary(age.non_syn.depth)
+```
+
+### 5. Shapiro Wilks test of normality on telomere length data per individual
+
+```{r}
+shapiro.test(summ_cut$tel_length[summ_cut$donor_id == "CB001" & summ_cut$cell_type == "HSC" & summ_cut$platform == "hiseq"])
+```
+
+```{r}
+shapiro.test(summ_cut$tel_length[summ_cut$donor_id == "KX001" & summ_cut$cell_type == "HSC" & summ_cut$platform == "hiseq"])
+```
+
+```{r}
+shapiro.test(summ_cut$tel_length[summ_cut$donor_id == "KX002" & summ_cut$cell_type == "HSC" & summ_cut$platform == "hiseq"])
+```
+
+```{r}
+shapiro.test(summ_cut$tel_length[summ_cut$donor_id == "SX001" & summ_cut$cell_type == "HSC" & summ_cut$platform == "hiseq"])
+```
+
+```{r}
+shapiro.test(summ_cut$tel_length[summ_cut$donor_id == "AX001" & summ_cut$cell_type == "HSC" & summ_cut$platform == "hiseq"])
+```
+
+```{r}
+shapiro.test(summ_cut$tel_length[summ_cut$donor_id == "KX004" & summ_cut$cell_type == "HSC" & summ_cut$platform == "hiseq"])
+```
+
+```{r}
+shapiro.test(summ_cut$tel_length[summ_cut$donor_id == "KX003" & summ_cut$cell_type == "HSC" & summ_cut$platform == "hiseq"])
+```
+
+### 6. qqplots of telomere length data per individual
+
+```{r}
+ggqqplot(summ_cut$tel_length[summ_cut$donor_id == "CB001" & summ_cut$cell_type == "HSC" & summ_cut$platform == "hiseq"])
+```
+
+```{r}
+ggqqplot(summ_cut$tel_length[summ_cut$donor_id == "KX001" & summ_cut$cell_type == "HSC" & summ_cut$platform == "hiseq"])
+```
+
+```{r}
+ggqqplot(summ_cut$tel_length[summ_cut$donor_id == "KX002" & summ_cut$cell_type == "HSC" & summ_cut$platform == "hiseq"])
+```
+
+```{r}
+ggqqplot(summ_cut$tel_length[summ_cut$donor_id == "SX001" & summ_cut$cell_type == "HSC" & summ_cut$platform == "hiseq"])
+```
+
+```{r}
+ggqqplot(summ_cut$tel_length[summ_cut$donor_id == "AX001" & summ_cut$cell_type == "HSC" & summ_cut$platform == "hiseq"])
+```
+
+```{r}
+ggqqplot(summ_cut$tel_length[summ_cut$donor_id == "KX004" & summ_cut$cell_type == "HSC" & summ_cut$platform == "hiseq"])
+```
+
+```{r}
+ggqqplot(summ_cut$tel_length[summ_cut$donor_id == "KX003" & summ_cut$cell_type == "HSC" & summ_cut$platform == "hiseq"])
+```
+
+### 7. Density plots of telomere data per individual
+
+```{r}
+ggdensity(summ_cut$tel_length[summ_cut$donor_id == "CB001" & summ_cut$cell_type == "HSC" & summ_cut$platform == "hiseq"])
+```
+
+```{r}
+ggdensity(summ_cut$tel_length[summ_cut$donor_id == "KX001" & summ_cut$cell_type == "HSC" & summ_cut$platform == "hiseq"])
+```
+
+```{r}
+ggdensity(summ_cut$tel_length[summ_cut$donor_id == "KX002" & summ_cut$cell_type == "HSC" & summ_cut$platform == "hiseq"])
+```
+
+```{r}
+ggdensity(summ_cut$tel_length[summ_cut$donor_id == "SX001" & summ_cut$cell_type == "HSC" & summ_cut$platform == "hiseq"])
+```
+
+```{r}
+ggdensity(summ_cut$tel_length[summ_cut$donor_id == "AX001" & summ_cut$cell_type == "HSC" & summ_cut$platform == "hiseq"])
+```
+```{r}
+ggdensity(summ_cut$tel_length[summ_cut$donor_id == "KX004" & summ_cut$cell_type == "HSC" & summ_cut$platform == "hiseq"])
+```
+
+```{r}
+ggdensity(summ_cut$tel_length[summ_cut$donor_id == "KX003" & summ_cut$cell_type == "HSC" & summ_cut$platform == "hiseq"])
+```
+
+### 8. Calculating proportion of 'outlying' telomere lengths per individual  
+
+#####- note all outliers have unexpectedly long rather than short telomeres 
+```{r}
+CB001_norm <- summ_cut[summ_cut$platform == "hiseq" & summ_cut$donor_id == "CB001", ]
+CB001_outliers <- boxplot.stats(CB001_norm$tel_length)$out
+CB001 <- (length(CB001_outliers)/length(CB001_norm$tel_length))*100
+CB001
+```
+
+```{r}
+KX001_norm <- summ_cut[summ_cut$platform == "hiseq" & summ_cut$donor_id == "KX001", ]
+KX001_outliers <- boxplot.stats(KX001_norm$tel_length)$out
+KX001 <- (length(KX001_outliers)/length(KX001_norm$tel_length))*100
+KX001
+```
+
+```{r}
+KX002_norm <- summ_cut[summ_cut$platform == "hiseq" & summ_cut$donor_id == "KX002", ]
+KX002_outliers <- boxplot.stats(KX002_norm$tel_length)$out
+KX002 <- (length(KX002_outliers)/length(KX002_norm$tel_length))*100
+KX002
+```
+
+```{r}
+SX001_norm <- summ_cut[summ_cut$platform == "hiseq" & summ_cut$donor_id == "SX001", ]
+SX001_outliers <- boxplot.stats(SX001_norm$tel_length)$out
+SX001 <- (length(SX001_outliers)/length(SX001_norm$tel_length))*100
+SX001
+```
+
+```{r}
+AX001_norm <- summ_cut[summ_cut$platform == "hiseq" & summ_cut$donor_id == "AX001", ]
+AX001_outliers <- boxplot.stats(AX001_norm$tel_length)$out
+AX001 <- (length(AX001_outliers)/length(AX001_norm$tel_length))*100
+AX001
+```
+
+```{r}
+KX004_norm <- summ_cut[summ_cut$platform == "hiseq" & summ_cut$donor_id == "KX004", ]
+KX004_outliers <- boxplot.stats(KX004_norm$tel_length)$out
+KX004 <- (length(KX004_outliers)/length(KX004_norm$tel_length))*100
+KX004
+```
+
+```{r}
+KX003_norm <- summ_cut[summ_cut$platform == "hiseq" & summ_cut$donor_id == "KX003", ]
+KX003_outliers <- boxplot.stats(KX003_norm$tel_length)$out
+KX003 <- (length(KX003_outliers)/length(KX003_norm$tel_length))*100
+KX003
+```
+
+```{r}
+all_out <- rbind(CB001, KX001, KX002, SX001, AX001, KX004, KX003)
+age <- c(0,29,38,48,63,77,81)
+all_out <- cbind(all_out, age)
+colnames(all_out) <- c("outliers", "age")
+all_out <- as.data.frame(all_out)
+
+```
+
+### 9. Plot of percentage HSC/MPPs with outlying telomere lengths
+```{r}
+ggplot(data= all_out)+
+theme_bw()+
+  labs(x="Age (years)", y="Percentage HSC/MPPs with outlying telomere lengths")+
+  xlim(-10,100)+
+  ylim(0,10)+
+  theme(text=element_text(size=12))+
+  geom_point(data = all_out, aes(x = age, y = all_out$outliers))+
+ geom_smooth(data = all_out, method = lm, aes(x = age, y = outliers), se = FALSE)
+```
+```{r}
+pdf("~/Documents/PhD/Sequencing_results/DNA_seq/XX_summary/telomere_mutation/plots/tel_outliers.pdf", useDingbats = FALSE, width = 10, height = 8)
+ggplot(data= all_out)+
+theme_bw()+
+  labs(x="Age (years)", y="Percentage HSC/MPPs with outlying telomere lengths")+
+  xlim(-10,100)+
+  scale_y_continuous(breaks = c(0,2,4,6,8))+
+  theme(text=element_text(size=12))+
+  geom_point(data = all_out, aes(x = age, y = all_out$outliers))+
+ geom_smooth(data = all_out, method = lm, aes(x = age, y = outliers), se = FALSE)
+dev.off()
+```
+
+### 10. Linear regression of proportion outliers with age
+```{r}
+outliers <- all_out$outliers
+lm_out <- lm(outliers ~ age)
+summary(lm_out)
+```
+
+
+
+

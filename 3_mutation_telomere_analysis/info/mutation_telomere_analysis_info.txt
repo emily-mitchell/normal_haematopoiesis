@@ -1,0 +1,7 @@
+# Input files for the example KX001_4_subs_analysis.Rmd and KX001_4_subs_cut_analysis.Rmd scripts are available on Mendeley data (alongside equivalent input files for the other individuals)
+# KX001_4_subs_analysis.Rmd is a script that generates QC graphs for each sample per individual to allow removal of colonies that fail QC
+# KX001_4_subs_cut_analysis.Rmd performs analysis and depth adjustment of SNV and indel burden for each sample
+
+# Input files for the Summary_CN_SV_final.Rmd and Summary_telomere_mutation_all.Rmd are in the mutation_telomere_analysis/input folder 
+# Summary_telomere_mutation_all.Rmd is a script that generates the SNV, indel and telomere length plots in Figure 1
+# Summary_CN_SV_final.Rmd is a script that generates the copy number and structural variant plots in Figure 1

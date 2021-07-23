@@ -1,0 +1,52 @@
+---
+title: "Copy number and structural variant analysis"
+output: html_document
+author: Emily Mitchell
+---
+
+### Summary
+This script performs visualisation of copy number abberations (CNAs) and structural variants (SVs).  
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##### Open libraries
+```{r}
+suppressMessages(library(dplyr))
+suppressMessages(library(ggplot2))
+suppressMessages(library(RColorBrewer))
+```
+
+
+```{r warning = FALSE}
+setwd("~/Documents/PhD/Sequencing_results/DNA_seq/XX_summary/telomere_mutation")
+```
+
+### 1. Load matrices of copy number / structural variant type per sample number for each donor
+```{r}
+SV_summ <- read.csv("~/Documents/PhD/Sequencing_results/DNA_seq/XX_summary/telomere_mutation/data/SV_summ.csv", stringsAsFactors = F, row.names = 1)
+CN_summ <- read.csv("~/Documents/PhD/Sequencing_results/DNA_seq/XX_summary/telomere_mutation/data/CN_summ.csv", stringsAsFactors = F, row.names = 1)
+```
+
+##### Cut to rows of interest
+```{r}
+SV_summ <- as.matrix(SV_summ[6:9,],)
+CN_summ <- as.matrix(CN_summ[6:9,])
+```
+
+### 2. Structural variant barplot
+```{r}
+barplot(SV_summ, beside = FALSE, names.arg = c("CB001","CB002","KX001","KX002","SX001","AX001","KX007","KX008","KX004","KX003"), col = brewer.pal(10,"PRGn")[c(2,4,8,10)], ylim = c(0,0.04), cex.names = 0.5, legend.text = T, args.legend = list(x= "topleft"), main = "Number of structural variant events \nexpressed as a fraction of total sample number")
+```
+
+### 3. Autosomal CNA barplot
+```{r}
+barplot(CN_summ[1:2,], beside = FALSE,names.arg = c("CB001","CB002","KX001","KX002","SX001","AX001","KX007","KX008","KX004","KX003"), col = brewer.pal(10,"GnBu")[c(9,7)], ylim = c(0,0.008), cex.names = 0.8, legend.text = TRUE,args.legend = list(x= "topleft"), main = "Number of autosomal CNA events \nexpressed as a fraction of total sample number")
+```
+
+### 4. Barplot of Y loss in male individuals
+```{r}
+barplot(CN_summ[3:4,c(3:7,10)], beside = FALSE,col = brewer.pal(10,"GnBu")[c(9,7)], ylim = c(0,0.2), legend.text = TRUE, args.legend = list(x= "topleft"), cex.names = 1, main = "Number of independent Y loss events \nexpressed as a fraction of total sample number")
+```
+
