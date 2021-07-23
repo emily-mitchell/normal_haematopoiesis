@@ -1,96 +1,106 @@
 ---
 title: "DNDScv for haematopoietic colony samples"
-output:
-  html_document: default
-  pdf_document: default
+output: html_document
+author: Emily Mitchell
 ---
+
+### Summary
+
+This script performs dN/dS analysis on different subsets of the mutation dataset. The whole dataset includes unique mutations (SNVs and small indels) from all 10 donors.  It is also broken down into 'cord blood' (CB001 and CB002), 'young' (KX001, KX002, SX001, AX001) and 'old' datasets (KX007, KX008, KX004, KX003). We used the R packed dndscv to perform the analysis.
+
+1. Analysis for all old individuals - all variants: all_old
+2. Analysis all young individuals - all variants: all_young
+3. Analysis all cord blood - all variants: all_CB
+4. Analysis all individuals and all variants
+5. Analysis for all old individuals - private variants: private_old
+6. Analysis for all old individuals - shared variants: shared_old
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Open packages
+##### Open libraries
 ```{r}
-library(stringr)
-library(ape)
-library(seqinr)
-library(ggtree)
-library(tidyr)
-library(dplyr)
-library(ggplot2)
-library(dndscv)
-library(phytools)
-library(ggplot2)
-library(forestplot)
+suppressMessages(library(stringr))
+suppressMessages(library(ape))
+suppressMessages(library(seqinr))
+suppressMessages(library(ggtree))
+suppressMessages(library(tidyr))
+suppressMessages(library(dplyr))
+suppressMessages(library(ggplot2))
+suppressMessages(library(dndscv))
+suppressMessages(library(phytools))
+suppressMessages(library(ggplot2))
+suppressMessages(library(forestplot))
 ```
 
-Set file paths and working directory
+##### Set file paths and working directory
 ```{r}
 ID = "All" #Edit
 Iteration = "All" #Edit
-setwd("~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/dNdS/final")
 ```
 
-Load files 
+##### Load files 
 ```{r}
-all_old <- read.table("All_dnds_mutset_old_all.txt",stringsAsFactors = F, header = T)
+all_old <- read.table("~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/dNdS/final/All_dnds_mutset_old_all.txt",stringsAsFactors = F, header = T)
 
-all_young <- read.table( "All_dnds_mutset_young_all.txt",stringsAsFactors = F, header = T)
+all_young <- read.table( "~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/dNdS/final/All_dnds_mutset_young_all.txt",stringsAsFactors = F, header = T)
 
-all_CB <- read.table("All_dnds_mutset_CB_all.txt",  stringsAsFactors = F, header = T)
+all_CB <- read.table("~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/dNdS/final/All_dnds_mutset_CB_all.txt",  stringsAsFactors = F, header = T)
 
-all <- read.table("All_dnds_all.txt", stringsAsFactors = F, header = T)
+all <- read.table("~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/dNdS/final/All_dnds_all.txt", stringsAsFactors = F, header = T)
 
 ```
 
-Load files - shared muts
+##### Load files - shared muts
 ```{r}
-shared_old <- read.table("All_dnds_mutset_old_shared.txt",  stringsAsFactors = F, header = T)
+shared_old <- read.table("~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/dNdS/final/All_dnds_mutset_old_shared.txt",  stringsAsFactors = F, header = T)
 
 
-shared_young <- read.table("All_dnds_mutset_young_shared.txt", stringsAsFactors = F, header = T)
+shared_young <- read.table("~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/dNdS/final/All_dnds_mutset_young_shared.txt", stringsAsFactors = F, header = T)
 
 
-shared_CB <- read.table( "All_dnds_mutset_CB_shared.txt",  stringsAsFactors = F, header = T)
+shared_CB <- read.table( "~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/dNdS/final/All_dnds_mutset_CB_shared.txt",  stringsAsFactors = F, header = T)
 
-shared <- read.table("All_dnds_shared.txt", stringsAsFactors = F, header = T)
+shared <- read.table("~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/dNdS/final/All_dnds_shared.txt", stringsAsFactors = F, header = T)
 
 ```
 
-Load files  - private muts
+##### Load files  - private muts
 ```{r}
 
-private_old <- read.table("All_dnds_mutset_old_private.txt",  stringsAsFactors = F, header = T)
+private_old <- read.table("~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/dNdS/final/All_dnds_mutset_old_private.txt",  stringsAsFactors = F, header = T)
 
-private_young <- read.table("All_dnds_mutset_young_private.txt",  stringsAsFactors = F, header = T)
+private_young <- read.table("~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/dNdS/final/All_dnds_mutset_young_private.txt",  stringsAsFactors = F, header = T)
 
-private_CB <- read.table("All_dnds_mutset_CB_private.txt",  stringsAsFactors = F, header = T)
+private_CB <- read.table("~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/dNdS/final/All_dnds_mutset_CB_private.txt",  stringsAsFactors = F, header = T)
 
-private <- read.table("All_dnds_private.txt", stringsAsFactors = F, header = T)
+private <- read.table("~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/dNdS/final/All_dnds_private.txt", stringsAsFactors = F, header = T)
 
 ```
 
-Import the myeloid malignancy panel list 
+##### Import the myeloid malignancy panel list 
 ```{r}
 chip_drivers = read.csv("~/Documents/Bioinformatics/CGP/Filtering/chip_drivers.csv", stringsAsFactors = FALSE, header = FALSE)
 chip_drivers <- chip_drivers$V1
 ```
 
-Import cancer gene list
+##### Import cancer gene list
 ```{r}
 cancer_drivers = read.csv("~/Documents/Bioinformatics/CGP/Filtering/martincorena2017_369drivers.csv", stringsAsFactors = FALSE, header = FALSE)
 cancer_drivers <- cancer_drivers$V1
 ```
 
-1. Analysis for all old individuals - all variants: all_old
+### 1. Analysis for all old individuals - all variants: all_old
 
-a) Global DNDS all_old
+##### a) Global DNDS all_old
 ```{r}
 #Run dndscv
 dndscvout=dndscv(all_old,outp=1,max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 400000)
 dndscvout$globaldnds
 ```
-b) Per gene analysis all_old
+##### b) Per gene analysis all_old
 ```{r}
 dndscvout=dndscv(all_old, max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000)
 sel_cv = dndscvout$sel_cv
@@ -98,20 +108,21 @@ print(head(sel_cv, n= 30L), digits = 3)
 write.csv(sel_cv, "sel_cv_all_old.csv",  row.names = F, quote=F)
 ```
 
-c) Significant genes all_old
+##### c) Significant genes all_old
 ```{r}
 signif_genes = sel_cv[sel_cv$qglobal_cv<0.1,c("gene_name", "qglobal_cv")]
 rownames(signif_genes) = NULL
 print(signif_genes)
 ```
 
-d) Estimation number of drivers
+##### d) Estimation number of drivers
 ```{r}
 wmis = dndscvout$globaldnds$mle[1]
 nmis = (sum(dndscvout$annotmuts$impact =="Missense"))
 ndrivers_all_old = (wmis-1)/wmis*nmis
 ndrivers_all_old
 ```
+
 ```{r}
 wmis = dndscvout$globaldnds$cilow[1]
 nmis = (sum(dndscvout$annotmuts$impact =="Missense"))
@@ -126,7 +137,7 @@ ndrivers_all_old_cihigh = (wmis-1)/wmis*nmis
 ndrivers_all_old_cihigh
 ```
 
-Forest plot
+##### Forest plot
 ```{r}
 dnds <- structure(list(
     mean  = c(NA,dndscvout$globaldnds$mle[1],dndscvout$globaldnds$mle[2],dndscvout$globaldnds$mle[4],dndscvout$globaldnds$mle[5]), 
@@ -139,7 +150,6 @@ dnds <- structure(list(
 tabletext<-
   c("name","missense", "nonsense","truncating", "all")
 
-pdf("old_dnds.pdf",width=6,height=4)
 forestplot(tabletext, 
            dnds,new_page = FALSE,
            boxsize = 0.15,
@@ -148,21 +158,21 @@ forestplot(tabletext,
            xticks = c(0.8,0.9,1.0,1.1,1.2),
            xlog=FALSE, 
            col=fpColors(box="royalblue",line="darkblue", summary="royalblue"))
-dev.off()
 ```
 
-e) Removing annotated drivers from dataset all_old
+##### e) Removing annotated drivers from dataset all_old
 ```{r}
 all_old_annot <- dndscvout$annotmuts
 all_old_annot_no_drivers <- all_old_annot[!all_old_annot$gene %in% chip_drivers ,]
 ```
 
-f) Annotated drivers removed all_old
+##### f) Annotated drivers removed all_old
 ```{r}
 dndscvout=dndscv(all_old_annot_no_drivers, outp = 1, max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000)
 dndscvout$globaldnds
 ```
-g) Number of drivers with annotated drivers removed
+
+##### g) Number of drivers with annotated drivers removed
 ```{r}
 wmis = dndscvout$globaldnds$mle[1]
 nmis = (sum(dndscvout$annotmuts$impact =="Missense"))
@@ -170,14 +180,14 @@ ndrivers_all_old = (wmis-1)/wmis*nmis
 ndrivers_all_old
 ```
 
-g) Cancer gene set analysis all_old
+##### h) Cancer gene set analysis all_old
 ```{r}
 dndscvout=dndscv(all_old,max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000, gene_list = cancer_drivers)
 sel_cv = dndscvout$sel_cv
 print(head(sel_cv, n= 30L), digits = 3)
 ```
 
-h) Cancer gene set analysis excluding CHIP drivers all_old
+##### i) Cancer gene set analysis excluding CHIP drivers all_old
 ```{r}
 dndscvout=dndscv(all_old,max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000, gene_list = setdiff(cancer_drivers, chip_drivers))
 sel_cv = dndscvout$sel_cv
@@ -186,16 +196,16 @@ print(head(sel_cv), digits = 3)
 
 
 
-2.  Analysis all young individuals - all variants: all_young
+### 2.  Analysis all young individuals - all variants: all_young
 
-a) Global dnds all_young
+##### a) Global dnds all_young
 ```{r}
 #Run dndscv
 dndscvout=dndscv(all_young,outp=1, max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000)
 dndscvout$globaldnds
 ```
 
-b) Per gene analysis all_young
+##### b) Per gene analysis all_young
 ```{r}
 dndscvout=dndscv(all_young,max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000)
 sel_cv = dndscvout$sel_cv
@@ -203,14 +213,14 @@ print(head(sel_cv, n=30L), digits = 3)
 write.csv(sel_cv, "sel_cv_all_young.csv",  row.names = F, quote=F)
 ```
 
-c) Significant genes all_young
+##### c) Significant genes all_young
 ```{r}
 signif_genes = sel_cv[sel_cv$qglobal_cv<0.1, c("gene_name","qglobal_cv")]
 rownames(signif_genes) = NULL
 print(signif_genes)
 ```
 
-d) Estimation number of drivers all_young
+##### d) Estimation number of drivers all_young
 ```{r}
 wmis = dndscvout$globaldnds$mle[1]
 nmis = (sum(dndscvout$annotmuts$impact =="Missense"))
@@ -232,7 +242,7 @@ ndrivers_all_young_cihigh = (wmis-1)/wmis*nmis
 ndrivers_all_young_cihigh 
 ```
 
-Forest plot
+##### Forest plot
 ```{r}
 dnds <- structure(list(
     mean  = c(NA,dndscvout$globaldnds$mle[1],dndscvout$globaldnds$mle[2],dndscvout$globaldnds$mle[4],dndscvout$globaldnds$mle[5]), 
@@ -245,7 +255,6 @@ dnds <- structure(list(
 tabletext<-
   c("name","missense", "nonsense","truncating", "all")
 
-pdf("young_dnds.pdf",width=6,height=4)
 forestplot(tabletext, 
            dnds,new_page = FALSE,
            boxsize = 0.15,
@@ -254,32 +263,31 @@ forestplot(tabletext,
            xticks = c(0.8,0.9,1.0,1.1,1.2),
            xlog=FALSE, 
            col=fpColors(box="royalblue",line="darkblue", summary="royalblue"))
-dev.off()
 ```
 
-e) Removing annotated drivers from dataset all_young
+##### e) Removing annotated drivers from dataset all_young
 ```{r}
 all_young_annot <- dndscvout$annotmuts
 all_young_annot_no_drivers <- all_young_annot[!all_young_annot$gene %in% chip_drivers ,]
 ```
 
-f) Annotated drivers removed all_young
+##### f) Annotated drivers removed all_young
 ```{r}
 dndscvout=dndscv(all_young_annot_no_drivers, outp = 1, max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000)
 dndscvout$globaldnds
 ```
 
 
-3. Analysis all CB
+### 3. Analysis all cord blood - all variants: all_CB
 
-a) Global dnds all_CB
+##### a) Global dnds all_CB
 ```{r}
 #Run dndscv
 dndscvout=dndscv(all_CB,outp=1, max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000)
 dndscvout$globaldnds
 ```
 
-b) Per gene analysis all_CB
+##### b) Per gene analysis all_CB
 ```{r}
 dndscvout=dndscv(all_CB,max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000)
 sel_cv = dndscvout$sel_cv
@@ -287,14 +295,14 @@ print(head(sel_cv, n= 30L), digits = 3)
 write.csv(sel_cv, "sel_cv_all_CB.csv",  row.names = F, quote=F)
 ```
 
-c) Significant genes all_CB
+##### c) Significant genes all_CB
 ```{r}
 signif_genes = sel_cv[sel_cv$qallsubs_cv <0.1, c("gene_name","qallsubs_cv")]
 rownames(signif_genes) = NULL
 print(signif_genes)
 ```
 
-d) Estimation number of drivers all_CB
+##### d) Estimation number of drivers all_CB
 ```{r}
 wmis = dndscvout$globaldnds$mle[1]
 nmis = (sum(dndscvout$annotmuts$impact =="Missense"))
@@ -316,26 +324,26 @@ ndrivers_CB_cihigh = (wmis-1)/wmis*nmis
 ndrivers_CB_cihigh
 ```
 
-e) Removing annotated drivers all_CB
+##### e) Removing annotated drivers all_CB
 ```{r}
 all_CB_annot <- dndscvout$annotmuts
 all_CB_annot_no_drivers <- all_CB_annot[!all_CB_annot$gene %in% chip_drivers ,]
 ```
 
-f) Annotated drivers removed all_CB
+##### f) Annotated drivers removed all_CB
 ```{r}
 dndscvout=dndscv(all_CB_annot_no_drivers, outp = 1, max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000)
 dndscvout$globaldnds
 ```
 
-g) Cancer gene set analysis all_CB
+##### g) Cancer gene set analysis all_CB
 ```{r}
 dndscvout=dndscv(all_CB,max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000, gene_list = cancer_drivers)
 sel_cv = dndscvout$sel_cv
 print(head(sel_cv), digits = 3)
 ```
 
-h) Cancer gene set analysis excluding CHIP drivers all_CB
+##### h) Cancer gene set analysis excluding CHIP drivers all_CB
 ```{r}
 dndscvout=dndscv(all_CB,max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000, gene_list = setdiff(cancer_drivers, chip_drivers))
 sel_cv = dndscvout$sel_cv
@@ -344,9 +352,9 @@ print(head(sel_cv), digits = 3)
 
 
 
-4. Analysis all individuals and all variants
+### 4. Analysis all individuals and all variants
 
-a) Global dnds all
+##### a) Global dnds all
 ```{r}
 #Run dndscv
 dndscvout=dndscv(all,outp=1, max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000)
@@ -354,7 +362,7 @@ dndscvout$globaldnds
 write.csv(dndscvout$annotmuts, "dnds_annotmuts_all.csv",  row.names = F, quote=F)
 ```
 
-b) Per gene analysis all
+##### b) Per gene analysis all
 ```{r}
 dndscvout=dndscv(all,max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000)
 sel_cv = dndscvout$sel_cv
@@ -362,14 +370,14 @@ print(head(sel_cv, n= 30L), digits = 3)
 write.csv(sel_cv, "sel_cv_all.csv",  row.names = F, quote=F)
 ```
 
-c) Significant genes all
+##### c) Significant genes all
 ```{r}
 signif_genes = sel_cv[sel_cv$qglobal_cv<0.1, c("gene_name","qglobal_cv")]
 rownames(signif_genes) = NULL
 print(signif_genes)
 ```
 
-d) Estimation number of drivers all
+##### d) Estimation number of drivers all
 ```{r}
 wmis = dndscvout$globaldnds$mle[1]
 nmis = (sum(dndscvout$annotmuts$impact =="Missense"))
@@ -392,7 +400,7 @@ ndrivers_all_cihigh = (wmis-1)/wmis*nmis
 ndrivers_all_cihigh
 ```
 
-Forest plot
+##### Forest plot
 ```{r}
 dnds <- structure(list(
     mean  = c(NA,dndscvout$globaldnds$mle[1],dndscvout$globaldnds$mle[2],dndscvout$globaldnds$mle[4],dndscvout$globaldnds$mle[5]), 
@@ -405,7 +413,6 @@ dnds <- structure(list(
 tabletext<-
   c("name","missense", "nonsense","truncating", "all")
 
-pdf("all_dnds.pdf",width=6,height=4)
 forestplot(tabletext, 
            dnds,new_page = FALSE,
            boxsize = 0.15,
@@ -414,44 +421,46 @@ forestplot(tabletext,
            xticks = c(0.8,0.9,1.0,1.1,1.2),
            xlog=FALSE, 
            col=fpColors(box="royalblue",line="darkblue", summary="royalblue"))
-dev.off()
 ```
 
-e) Removing annotated drivers all
+##### e) Removing annotated drivers all
 ```{r}
 all_annot <- dndscvout$annotmuts
 all_annot_no_drivers <- all_annot[!all_annot$gene %in% chip_drivers ,]
 ```
 
-f) Annotated drivers removed all
+##### f) Annotated drivers removed all
 ```{r}
 dndscvout=dndscv(all_annot_no_drivers, outp = 1, max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000)
 dndscvout$globaldnds
 ```
 
-g) Cancer gene set analysis all
+##### g) Cancer gene set analysis all
 ```{r}
 dndscvout=dndscv(all,max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000, gene_list = cancer_drivers)
 sel_cv = dndscvout$sel_cv
 print(head(sel_cv), digits = 3)
 ```
 
-h) Cancer gene set analysis excluding CHIP drivers all
+##### h) Cancer gene set analysis excluding CHIP drivers all
 ```{r}
 dndscvout=dndscv(all,max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000, gene_list = setdiff(cancer_drivers, chip_drivers))
 sel_cv = dndscvout$sel_cv
 print(head(sel_cv), digits = 3)
 ```
 
-5. Analysis for all old individuals - private variants: private_old
 
-a) Global DNDS private_old
+
+### 5. Analysis for all old individuals - private variants: private_old
+
+##### a) Global DNDS private_old
 ```{r}
 #Run dndscv
 dndscvout=dndscv(private_old,outp=1,max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 400000)
 dndscvout$globaldnds
 ```
-b) Per gene analysis private_old
+
+##### b) Per gene analysis private_old
 ```{r}
 dndscvout=dndscv(private_old, max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000)
 sel_cv = dndscvout$sel_cv
@@ -459,20 +468,21 @@ print(head(sel_cv, n= 30L), digits = 3)
 write.csv(sel_cv, "sel_cv_private_old.csv",  row.names = F, quote=F)
 ```
 
-c) Significant genes private_old
+##### c) Significant genes private_old
 ```{r}
 signif_genes = sel_cv[sel_cv$qglobal_cv<0.1,c("gene_name", "qglobal_cv")]
 rownames(signif_genes) = NULL
 print(signif_genes)
 ```
 
-d) Estimation number of drivers
+##### d) Estimation number of drivers
 ```{r}
 wmis = dndscvout$globaldnds$mle[1]
 nmis = (sum(dndscvout$annotmuts$impact =="Missense"))
 ndrivers_private_old = (wmis-1)/wmis*nmis
 ndrivers_private_old
 ```
+
 ```{r}
 wmis = dndscvout$globaldnds$cilow[1]
 nmis = (sum(dndscvout$annotmuts$impact =="Missense"))
@@ -488,19 +498,19 @@ ndrivers_private_old_cihigh
 ```
 
 
-
-e) Removing annotated drivers from dataset private_old
+##### e) Removing annotated drivers from dataset private_old
 ```{r}
 private_old_annot <- dndscvout$annotmuts
 private_old_annot_no_drivers <- private_old_annot[!private_old_annot$gene %in% chip_drivers ,]
 ```
 
-f) Annotated drivers removed private_old
+##### f) Annotated drivers removed private_old
 ```{r}
 dndscvout=dndscv(private_old_annot_no_drivers, outp = 1, max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000)
 dndscvout$globaldnds
 ```
-g) Number of drivers with annotated drivers removed
+
+##### g) Number of drivers with annotated drivers removed
 ```{r}
 wmis = dndscvout$globaldnds$mle[1]
 nmis = (sum(dndscvout$annotmuts$impact =="Missense"))
@@ -508,14 +518,14 @@ ndrivers_private_old = (wmis-1)/wmis*nmis
 ndrivers_private_old
 ```
 
-g) Cancer gene set analysis private_old
+##### h) Cancer gene set analysis private_old
 ```{r}
 dndscvout=dndscv(private_old,max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000, gene_list = cancer_drivers)
 sel_cv = dndscvout$sel_cv
 print(head(sel_cv, n= 30L), digits = 3)
 ```
 
-h) Cancer gene set analysis excluding CHIP drivers private_old
+##### i) Cancer gene set analysis excluding CHIP drivers private_old
 ```{r}
 dndscvout=dndscv(private_old,max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000, gene_list = setdiff(cancer_drivers, chip_drivers))
 sel_cv = dndscvout$sel_cv
@@ -524,15 +534,16 @@ print(head(sel_cv), digits = 3)
 
 
 
-6. Analysis for all old individuals - shared variants: shared_old
+### 6. Analysis for all old individuals - shared variants: shared_old
 
-a) Global DNDS shared_old
+##### a) Global DNDS shared_old
 ```{r}
 #Run dndscv
 dndscvout=dndscv(shared_old,outp=1,max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 400000)
 dndscvout$globaldnds
 ```
-b) Per gene analysis shared_old
+
+##### b) Per gene analysis shared_old
 ```{r}
 dndscvout=dndscv(shared_old, max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000)
 sel_cv = dndscvout$sel_cv
@@ -540,20 +551,21 @@ print(head(sel_cv, n= 30L), digits = 3)
 write.csv(sel_cv, "sel_cv_shared_old.csv",  row.names = F, quote=F)
 ```
 
-c) Significant genes shared_old
+##### c) Significant genes shared_old
 ```{r}
 signif_genes = sel_cv[sel_cv$qglobal_cv<0.1,c("gene_name", "qglobal_cv")]
 rownames(signif_genes) = NULL
 print(signif_genes)
 ```
 
-d) Estimation number of drivers
+##### d) Estimation number of drivers
 ```{r}
 wmis = dndscvout$globaldnds$mle[1]
 nmis = (sum(dndscvout$annotmuts$impact =="Missense"))
 ndrivers_shared_old = (wmis-1)/wmis*nmis
 ndrivers_shared_old
 ```
+
 ```{r}
 wmis = dndscvout$globaldnds$cilow[1]
 nmis = (sum(dndscvout$annotmuts$impact =="Missense"))
@@ -568,20 +580,19 @@ ndrivers_shared_old_cihigh = (wmis-1)/wmis*nmis
 ndrivers_shared_old_cihigh
 ```
 
-
-
-e) Removing annotated drivers from dataset shared_old
+##### e) Removing annotated drivers from dataset shared_old
 ```{r}
 shared_old_annot <- dndscvout$annotmuts
 shared_old_annot_no_drivers <- shared_old_annot[!shared_old_annot$gene %in% chip_drivers ,]
 ```
 
-f) Annotated drivers removed shared_old
+##### f) Annotated drivers removed shared_old
 ```{r}
 dndscvout=dndscv(shared_old_annot_no_drivers, outp = 1, max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000)
 dndscvout$globaldnds
 ```
-g) Number of drivers with annotated drivers removed
+
+##### g) Number of drivers with annotated drivers removed
 ```{r}
 wmis = dndscvout$globaldnds$mle[1]
 nmis = (sum(dndscvout$annotmuts$impact =="Missense"))
@@ -589,21 +600,21 @@ ndrivers_shared_old = (wmis-1)/wmis*nmis
 ndrivers_shared_old
 ```
 
-g) Cancer gene set analysis shared_old
+##### h) Cancer gene set analysis shared_old
 ```{r}
 dndscvout=dndscv(shared_old,max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000, gene_list = cancer_drivers)
 sel_cv = dndscvout$sel_cv
 print(head(sel_cv, n= 30L), digits = 3)
 ```
 
-h) Cancer gene set analysis excluding CHIP drivers shared_old
+##### i) Cancer gene set analysis excluding CHIP drivers shared_old
 ```{r}
 dndscvout=dndscv(shared_old,max_muts_per_gene_per_sample = 100, max_coding_muts_per_sample = 1000000, gene_list = setdiff(cancer_drivers, chip_drivers))
 sel_cv = dndscvout$sel_cv
 print(head(sel_cv), digits = 3)
 ```
 
-Forest plot for estimated number of mutations
+##### Forest plot for estimated number of mutations
 ```{r}
 dnds <- structure(list(
     mean  = c(NA,ndrivers_CB,ndrivers_all_young,ndrivers_all_old,ndrivers_all,ndrivers_shared_old,ndrivers_private_old), 
@@ -616,7 +627,6 @@ dnds <- structure(list(
 tabletext<-
   c("name","cord blood", "young","old", "all", "shared old", "private old")
 
-pdf("estimated_mutations.pdf",width=6,height=4)
 forestplot(tabletext, 
            dnds,new_page = FALSE,
            boxsize = 0.15,
@@ -625,5 +635,4 @@ forestplot(tabletext,
            xticks = c(-400,0,400,800,1200,1600),
            xlog=FALSE, 
            col=fpColors(box="royalblue",line="darkblue", summary="royalblue"))
-dev.off()
 ```

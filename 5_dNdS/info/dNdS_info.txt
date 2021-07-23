@@ -1,0 +1,3 @@
+# Input for all_DNDScv_final.Rmd is available in the dNdS/input folder and on Mendeley Data.
+
+# Also see https://github.com/im3sanger/dndscv for more information. 

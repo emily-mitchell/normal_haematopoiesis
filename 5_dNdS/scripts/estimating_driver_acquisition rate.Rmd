@@ -1,0 +1,32 @@
+---
+title: "Estimating driver mutation acquisition rate"
+output: html_document
+author: Emily Mitchell
+---
+
+Script to estimate driver mutation acquisition rate based on the rate of accumulation of non-synonymous mutations (as observed in our data) and the dNdS results which estimate that 1 in 12 to 1 in 34 non-synonymous mutations in the dataset are drivers. 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Linear regression estimate of non-synonymous driver accumulation rate per year in HSC/MPPs (using only samples with mean depth > 14) = 0.12 (0.49-0.55)
+```{r}
+driver.sim=vector(mode = "list",length=500000)
+for (i in 1:500000) {
+non_syn_mut_per_year <- runif(1,0.11,0.13)
+fraction_drivers <- runif(1,0.029,0.083) # 0.029 = 1 in 34 and 0.083 = 1 in 12
+driver_rate <- non_syn_mut_per_year*fraction_drivers
+driver.sim[i] <- driver_rate
+}
+```
+
+```{r}
+driver.sim <- as.numeric(driver.sim)
+driver.sim_95CI=quantile(driver.sim,probs=c(0.025,0.975))
+driver.sim_95CI
+```
+
+```{r}
+mean(driver.sim)
+```
