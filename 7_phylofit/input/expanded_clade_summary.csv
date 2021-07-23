@@ -1,0 +1,9 @@
+﻿donor_id,number_expanded_clades,percent_haematopoiesis,colour,age
+KX001,0,0,blue,29
+KX002,1,1,blue,38
+SX001,0,0,blue,48
+AX001,1,2,blue,63
+KX007,18,32,red,75
+KX008,12,44,red,76
+KX004,15,61,red,77
+KX003,13,57,red,81

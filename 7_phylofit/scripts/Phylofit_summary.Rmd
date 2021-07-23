@@ -1,12 +1,20 @@
 ---
-title: "Phylofit summary plots"
+title: "Phylofit and expanded clade summary plots"
 output: html_document
+author: Emily Mitchell
 ---
+
+### Summary
+
+Script to plot phylofit results and visualise distribution of expanded clades.
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
+##### Open packages
 ```{r}
 suppressMessages(library(ggplot2))
 suppressMessages(library(gplots))
@@ -16,20 +24,14 @@ suppressMessages(library(gtable))
 suppressMessages(library(RColorBrewer))
 ```
 
-
-Set file paths and working directory
+##### Read in table of selection coefficients, and expanded clade information
 ```{r}
-setwd = paste0("~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/phylofit/") 
+sel <- read.csv("~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/phylofit/clade_size_5/selection_coeff_all.csv", stringsAsFactors = F)
+summary <- read.csv("~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/phylofit/clade_0.01/expanded_clade_summary.csv", stringsAsFactors = F, header = T)
+clades <- read.csv("~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/phylofit/clade_0.01/expanded_clades.csv", stringsAsFactors = F, header = T)
 ```
 
-Read in table of selection coefficients
-```{r}
-sel <- read.csv("~/Documents/PhD/Sequencing_results/DNA_seq/XX_Summary/phylofit/selection_coeff_all.csv", stringsAsFactors = F)
-```
-
-
-
-Change selection coefficient to 'fitness effect'
+##### Change selection coefficient to 'fitness effect'
 ```{r}
 sel$fitness_effect <- sel$S*100
 sel$fitness_effect_lb <- sel$S_lb*100
@@ -38,11 +40,10 @@ sel$fitness_effect_ub <- sel$S_ub*100
 
 ```{r}
 sel$donor_ID <- factor(sel$donor_ID, levels = c("KX001","KX002","AX001","KX007","KX008","KX004","KX003"))
-
 ```
 
+##### Plot of fitness effects for donors age > 70
 ```{r}
-pdf("sel.pdf", width = 10, height = 4)
 ggplot(sel[sel$donor_ID %in% c("KX007","KX008","KX004","KX003"),]) +
   theme_bw()+
   scale_fill_manual(values = brewer.pal(10,"Paired")[c(5,6,9,10)])+
@@ -51,12 +52,10 @@ ggplot(sel[sel$donor_ID %in% c("KX007","KX008","KX004","KX003"),]) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
   ylim(0,40)+
   labs(y = "Fitness effect (s) (% per year)", x = "Clade ID")
-dev.off()
 ```
 
-Plot all
+##### Plot of fitness effects for all donors
 ```{r}
-pdf("sel_cut.pdf", useDingbats = FALSE, width = 10, height = 4)
 ggplot(sel) +
   theme_classic()+
   geom_bar(aes(reorder(variant_ID, S), S, fill = donor_ID), stat="identity", alpha = 2)+
@@ -64,7 +63,18 @@ ggplot(sel) +
   geom_errorbar(aes(x= variant_ID, ymin= S_lb, ymax= S_ub), width = 0.4, colour = "black", size = 0.5)+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
   ylim(0,0.5)+
-  labs(y = "S (Selection Coefficient)", x = "Driver ID")
-dev.off()
+  labs(y = "S (Fitness effect)", x = "Driver ID")
+```
+
+##### Plot of expanded clade size distributions for all donors
+```{r}
+ggplot(clades,
+       aes(x = donor_info, y= cf, fill = cf))+
+  geom_bar(stat = "identity", color = "light grey")+
+  theme_bw()+
+  ylim(0,60)+
+  labs(x="Donor age and sex", y="Clonal fraction of expanded clades (%)")+
+  scale_fill_distiller(palette ="YlOrRd", direction = 1)
+
 ```
 

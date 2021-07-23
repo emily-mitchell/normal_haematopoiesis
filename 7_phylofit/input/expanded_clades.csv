@@ -1,0 +1,63 @@
+﻿donor_id,donor_info,variant_ID,number_samples,cf,driver
+KX001,29 M,Clade1,4,0.9803922,no known driver
+KX002,38 M,Clade1,5,1.3774105,no known driver
+SX001,48 M,Clade1,3,0.826446281,no known driver
+AX001,63 M,Clade1,6,1.66205,no known driver
+KX007,75 M,CREBBP p.N2111S,10,3.1746032,CREBBP
+KX007,75 M,Clade1,9,2.8571429,no known driver
+KX007,75 M,Clade2,8,2.5396825,no known driver
+KX007,75 M,Clade6,6,1.9047619,no known driver
+KX007,75 M,Clade5,6,1.9047619,no known driver
+KX007,75 M,Clade4,6,1.9047619,no known driver
+KX007,75 M,Clade3,6,1.9047619,no known driver
+KX007,75 M,Clade9,5,1.5873016,no known driver
+KX007,75 M,Clade8,5,1.5873016,no known driver
+KX007,75 M,DNMT3A p.G699S,5,1.5873016,DNMT3A
+KX007,75 M,Clade7,5,1.5873016,no known driver
+KX007,75 M,DNMT3A p.K826R,5,1.5873016,DNMT3A
+KX007,75 M,Clade14,4,1.2698413,no known driver
+KX007,75 M,Clade13,4,1.2698413,no known driver
+KX007,75 M,DNMT3A p.D768Y,4,1.2698413,DNMT3A
+KX007,75 M,Clade12,4,1.2698413,no known driver
+KX007,75 M,Clade11,4,1.2698413,no known driver
+KX007,75 M,Clade10,4,1.2698413,no known driver
+KX008,76 F,Clade1 ,53,14.4414169,no known driver
+KX008,76 F,Clade2,29,7.9019074,no known driver
+KX008,76 F,Clade4,15,4.0871935,no known driver
+KX008,76 F,Clade3,15,4.0871935,no known driver
+KX008,76 F,Clade5,14,3.8147139,no known driver
+KX008,76 F,Clade6,8,2.1798365,no known driver
+KX008,76 F,Clade8,6,1.6348774,no known driver
+KX008,76 F,Clade7,6,1.6348774,no known driver
+KX008,76 F,Clade9,5,1.3623978,no known driver
+KX008,76 F,Clade10,5,1.3623978,no known driver
+KX008,76 F,Clade12,4,1.0899183,no known driver
+KX008,76 F,Clade11,4,1.0899183,no known driver
+KX004,77 F,DNMT3A_p.?,78,17.2949002,DNMT3A
+KX004,77 F,Clade1 ,46,10.1995565,no known driver
+KX004,77 F,DNMT3A_P904L,27,5.9866962,DNMT3A
+KX004,77 F,DNMT3A_F752S,23,5.0997783,DNMT3A
+KX004,77 F,Clade2,16,3.5476718,no known driver
+KX004,77 F,Clade3,13,2.8824834,no known driver
+KX004,77 F,Clade5,12,2.6607539,no known driver
+KX004,77 F,Clade4,12,2.6607539,no known driver
+KX004,77 F,DNMT3A_G843S,11,2.4390244,DNMT3A
+KX004,77 F,Clade6,9,1.9955654,no known driver
+KX004,77 F,CBL_C404Y,6,1.3303769,CBL
+KX004,77 F,DNMT3A_R309G,6,1.3303769,DNMT3A
+KX004,77 F,Clade8,5,1.1086475,no known driver
+KX004,77 F,DNMT3A_E477fs*14,5,1.1086475,DNMT3A
+KX004,77 F,Clade7,5,1.1086475,no known driver
+KX003,81 M,Clade1,112,34.146342,no known driver
+KX003,81 M,Clade2,10,3.048781,no known driver
+KX003,81 M,SETD2 p.L981V,9,2.743902,SETD2
+KX003,81 M,Clade3,9,2.743902,no known driver
+KX003,81 M,Clade4,8,2.439024,no known driver
+KX003,81 M,Clade6,6,1.829268,no known driver
+KX003,81 M,Clade5,6,1.829268,no known driver
+KX003,81 M,Clade7,5,1.52439,no known driver
+KX003,81 M,NOTCH2 p.S1888L,5,1.52439,no known driver
+KX003,81 M,DNMT3A p.R659H,4,1.219512,DNMT3A
+KX003,81 M,Clade9,4,1.219512,no known driver
+KX003,81 M,Clade8,4,1.219512,no known driver
+KX003,81 M,Clade10,4,1.219512,no known driver

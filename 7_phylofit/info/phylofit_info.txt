@@ -1,0 +1,1 @@
+# All input for KX003_5_phylofit.R and Phylofit_summary.Rmd is available in the phylofit/input folder.
